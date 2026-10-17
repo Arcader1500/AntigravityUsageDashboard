@@ -1,0 +1,47 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="anthropic" />
+          <option value="azure-mgmt-compute" />
+          <option value="azure-mgmt-containerservice" />
+          <option value="azure-mgmt-sql" />
+          <option value="azure-mgmt-storage" />
+          <option value="azure-mgmt-web" />
+          <option value="boto3" />
+          <option value="botocore" />
+          <option value="click" />
+          <option value="cryptography" />
+          <option value="cyclopts" />
+          <option value="durationpy" />
+          <option value="fastapi" />
+          <option value="idna" />
+          <option value="kubernetes" />
+          <option value="langchain-core" />
+          <option value="langchain-openai" />
+          <option value="langchain-protocol" />
+          <option value="langgraph-prebuilt" />
+          <option value="langsmith" />
+          <option value="opentelemetry-api" />
+          <option value="opentelemetry-sdk" />
+          <option value="opentelemetry-semantic-conventions" />
+          <option value="packaging" />
+          <option value="postgrest" />
+          <option value="pyroaring" />
+          <option value="python-multipart" />
+          <option value="realtime" />
+          <option value="s3transfer" />
+          <option value="storage3" />
+          <option value="supabase" />
+          <option value="supabase-auth" />
+          <option value="supabase-functions" />
+          <option value="tzdata" />
+          <option value="websocket-client" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

@@ -1,0 +1,7 @@
+# Antigravity Usage Dashboard - runtime + test dependencies
+# Install:  .venv\Scripts\python -m pip install -r requirements.txt
+streamlit>=1.36,<2
+plotly>=5.20
+pandas>=2.1
+numpy>=1.26
+pytest>=8.0

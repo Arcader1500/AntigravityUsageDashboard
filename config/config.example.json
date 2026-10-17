@@ -1,0 +1,18 @@
+{
+  "brain_root": "~/.gemini/antigravity-cli/brain",
+  "extractor_script": "~/docs/superpowers/scripts/agy_usage.py",
+  "python_executable": "py",
+  "db_path": "data/snapshots.db",
+  "log_dir": "data/logs",
+  "extraction_timeout_seconds": 180,
+  "subscription": {
+    "amount": 0.0,
+    "currency": "INR",
+    "period_days": 30,
+    "label": "Antigravity plan (set the amount you actually pay)"
+  },
+  "fx": {
+    "USD_INR": 88.0
+  },
+  "reporting_currency": "INR"
+}

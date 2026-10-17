@@ -1,0 +1,19 @@
+# Local-only dashboard: no telemetry, no binding to the network.
+[server]
+address = "127.0.0.1"
+port = 8501
+headless = false
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "dark"
+primaryColor = "#6ea8fe"
+backgroundColor = "#0b0f14"
+secondaryBackgroundColor = "#131a22"
+textColor = "#e6edf5"
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = true

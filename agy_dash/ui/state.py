@@ -56,22 +56,13 @@ def clear_all_caches() -> None:
 def get_runner(cfg: cfgmod.Config) -> jobs.JobRunner:
     key = str(Path(cfg.log_dir).resolve())
     if key not in _RUNNERS:
-        try:
-            _RUNNERS[key] = jobs.JobRunner(
-                script_path=cfg.extractor_script,
-                python_executable=cfg.python_executable,
-                log_dir=cfg.log_dir,
-                last_run_path=Path(cfg.log_dir) / "last_run.json",
-                lock_path=Path(cfg.log_dir) / "extractor.lock",
-            )
-        except TypeError:
-            _RUNNERS[key] = jobs.JobRunner(
-                python_executable=cfg.python_executable,
-                extractor_script=cfg.extractor_script,
-                log_dir=cfg.log_dir,
-                last_run_path=Path(cfg.log_dir) / "last_run.json",
-                lock_path=Path(cfg.log_dir) / "extractor.lock",
-            )
+        _RUNNERS[key] = jobs.JobRunner(
+            script_path=cfg.extractor_script,
+            python_executable=cfg.python_executable,
+            log_dir=cfg.log_dir,
+            last_run_path=Path(cfg.log_dir) / "last_run.json",
+            lock_path=Path(cfg.log_dir) / "extractor.lock",
+        )
     return _RUNNERS[key]
 
 

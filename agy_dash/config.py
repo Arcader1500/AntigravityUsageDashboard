@@ -18,7 +18,7 @@ CONFIG_DIR = PROJECT_DIR / "config"
 DATA_DIR = PROJECT_DIR / "data"
 
 # The extraction script owned by the earlier tooling work. Reused, never modified.
-DEFAULT_EXTRACTOR = Path.home() / "docs" / "superpowers" / "scripts" / "agy_usage.py"
+DEFAULT_EXTRACTOR = PROJECT_DIR / "agy_usage.py"
 DEFAULT_BRAIN_ROOT = Path.home() / ".gemini" / "antigravity-cli" / "brain"
 
 DEFAULTS: dict = {
@@ -63,7 +63,8 @@ class Config:
 
     @property
     def extractor_script(self) -> Path:
-        return Path(os.path.expanduser(str(self.data["extractor_script"])))
+        p = Path(os.path.expanduser(str(self.data["extractor_script"])))
+        return p if p.is_absolute() else (PROJECT_DIR / p)
 
     @property
     def python_executable(self) -> str:
@@ -71,11 +72,13 @@ class Config:
 
     @property
     def db_path(self) -> Path:
-        return Path(os.path.expanduser(str(self.data["db_path"])))
+        p = Path(os.path.expanduser(str(self.data["db_path"])))
+        return p if p.is_absolute() else (PROJECT_DIR / p)
 
     @property
     def log_dir(self) -> Path:
-        return Path(os.path.expanduser(str(self.data["log_dir"])))
+        p = Path(os.path.expanduser(str(self.data["log_dir"])))
+        return p if p.is_absolute() else (PROJECT_DIR / p)
 
     @property
     def extraction_timeout(self) -> int:

@@ -42,7 +42,7 @@ Run tests:
 | | |
 |---|---|
 | Usage source | `~/.gemini/antigravity-cli/brain/<conversationId>/.system_generated/logs/transcript.jsonl` (read-only, never written) |
-| Extractor | `~/docs/superpowers/scripts/agy_usage.py` — imported and called, never modified |
+| Extractor | `agy_usage.py` — imported and called, never modified |
 | Prices | `config/pricing.json` (falls back to the built-in catalog) |
 | Config | `config/config.json` (falls back to `config/config.example.json` defaults) |
 | Snapshots | `data/snapshots.db` (SQLite, optional) |
@@ -146,7 +146,7 @@ The web UI provides a dense, low-latency Mission Telemetry operations experience
 ```json
 {
   "brain_root": "~/.gemini/antigravity-cli/brain",
-  "extractor_script": "~/docs/superpowers/scripts/agy_usage.py",
+  "extractor_script": "agy_usage.py",
   "python_executable": "py",
   "db_path": "data/snapshots.db",
   "log_dir": "data/logs",
@@ -252,6 +252,7 @@ Run full suite:
 ## 9. File map
 
 ```text
+agy_usage.py                  the extractor script: scans Antigravity logs into daily/session aggregates
 app.py                        FastAPI application: routing, workspace rendering, partial endpoints
 agy_dash/
   config.py                   defaults, config.json merge, logging

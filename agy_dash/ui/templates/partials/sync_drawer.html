@@ -1,0 +1,80 @@
+<div id="sync-drawer" class="drawer">
+  <div class="drawer-header">
+    <div style="font-family:var(--font-display); font-weight:700;">OPERATIONS & SNAPSHOTS</div>
+    <button type="button" class="btn" onclick="closeDrawers()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <h4 style="margin-bottom:0.5rem; font-size:0.8rem;">Telemetry Source Integrity</h4>
+    <div class="callout">
+      Status: <span class="mono" style="color:{% if sync_data.source_online %}var(--signal-emerald){% else %}var(--signal-rose){% endif %};">
+        {% if sync_data.source_online %}ONLINE{% else %}OFFLINE{% endif %}
+      </span><br>
+      Directory: <code>{{ sync_data.brain_root }}</code><br>
+      Sessions Scanned: <span class="mono">{{ sync_data.sessions_scanned }}</span>
+    </div>
+
+    {% if sync_data.consistency_issues %}
+      <div class="callout warning">
+        <b>Consistency Discrepancies:</b>
+        <ul style="margin:0.25rem 0 0 1rem;">
+          {% for issue in sync_data.consistency_issues %}<li>{{ issue }}</li>{% endfor %}
+        </ul>
+        <span style="font-size:0.68rem; color:var(--text-muted);">Discrepancies may occur when sessions span filter boundaries.</span>
+      </div>
+    {% else %}
+      <div class="callout" style="color:var(--signal-emerald);">
+        ✓ Source records and daily totals are mathematically consistent.
+      </div>
+    {% endif %}
+
+    <h4 style="margin:1.5rem 0 0.5rem 0; font-size:0.8rem;">Background Extractor Process</h4>
+    <form hx-post="/api/jobs/start" hx-target="#job-status-panel" hx-headers='{"HX-Request":"true"}'>
+      <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+        <select name="report" class="filter-input" style="flex:1;">
+          <option value="all">Report: All</option>
+          <option value="daily">Report: Daily</option>
+          <option value="sessions">Report: Sessions</option>
+          <option value="tips">Report: Tips</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Run Extractor</button>
+      </div>
+    </form>
+
+    <div id="job-status-panel">
+      {% include "partials/job_status.html" %}
+    </div>
+
+    <h4 style="margin:1.5rem 0 0.5rem 0; font-size:0.8rem;">SQLite Snapshot Ledger</h4>
+    <form hx-post="/api/snapshots/ingest" hx-target="#snapshot-counts" hx-headers='{"HX-Request":"true"}'>
+      <button type="submit" class="btn">Save Snapshot Now</button>
+    </form>
+    <div id="snapshot-counts" style="margin-top:0.5rem; font-size:0.75rem;" class="mono">
+      Database: {{ sync_data.db_counts.session_facts }} sessions · {{ sync_data.db_counts.daily_facts }} daily · {{ sync_data.db_counts.runs }} runs.
+    </div>
+
+    <h4 style="margin:1.5rem 0 0.5rem 0; font-size:0.8rem;">Historical Ingestion Runs</h4>
+    <table class="data-table" style="font-size:0.72rem;">
+      <thead><tr><th>Run</th><th>Started</th><th>Duration</th><th>Report</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for r in sync_data.runs %}
+          <tr>
+            <td class="mono">#{{ r.run_id }}</td>
+            <td class="mono">{{ r.started_at[:19] }}</td>
+            <td class="mono">{{ r.duration_seconds }}s</td>
+            <td class="mono">{{ r.report }}</td>
+            <td class="mono">{{ r.status }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <details style="margin-top:1rem;">
+      <summary style="font-size:0.75rem; cursor:pointer; color:var(--text-muted);">Standard Output (stdout)</summary>
+      <pre class="mono" style="font-size:0.68rem; background:rgba(0,0,0,0.4); padding:0.5rem; max-height:200px; overflow:auto;">{{ sync_data.stdout or "(empty)" }}</pre>
+    </details>
+    <details style="margin-top:0.5rem;">
+      <summary style="font-size:0.75rem; cursor:pointer; color:var(--text-muted);">Standard Error (stderr)</summary>
+      <pre class="mono" style="font-size:0.68rem; background:rgba(0,0,0,0.4); padding:0.5rem; max-height:200px; overflow:auto;">{{ sync_data.stderr or "(empty)" }}</pre>
+    </details>
+  </div>
+</div>

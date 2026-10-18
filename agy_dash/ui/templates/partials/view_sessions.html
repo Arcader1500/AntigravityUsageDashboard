@@ -1,0 +1,190 @@
+<!-- ZONE 1: FILTER BAR & KPI STRIP -->
+<div class="bento-panel col-12" style="margin-bottom:1rem; padding:0.6rem 0.85rem; display:flex; justify-content:space-between; align-items:center;">
+  <div style="display:flex; gap:0.4rem; align-items:center;">
+    <span style="font-size:0.72rem; color:var(--text-muted); margin-right:0.3rem;">KIND:</span>
+    <button type="button" class="btn" hx-get="/?view=sessions" hx-target="#workspace-canvas" hx-swap="outerHTML">All</button>
+    <button type="button" class="btn" hx-get="/?view=sessions&kind=main" hx-target="#workspace-canvas" hx-swap="outerHTML">Main</button>
+    <button type="button" class="btn" hx-get="/?view=sessions&kind=subagent" hx-target="#workspace-canvas" hx-swap="outerHTML">Subagent</button>
+    <button type="button" class="btn" hx-get="/?view=sessions&kind=other" hx-target="#workspace-canvas" hx-swap="outerHTML">Other</button>
+  </div>
+  <div style="display:flex; gap:0.5rem; align-items:center;">
+    <input type="search" name="search" placeholder="Search sessions..." class="filter-input" style="width:14rem;"
+           hx-get="/?view=sessions" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-trigger="keyup changed delay:300ms">
+    <button type="button" class="btn" hx-post="/api/refresh?scope=deep" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-headers='{"HX-Request":"true"}'>🔄 Rescan Deep</button>
+  </div>
+</div>
+
+<div class="kpi-strip">
+  {% for kpi in vm.session_kpis %}
+    <div class="kpi-card">
+      <div class="lbl"><span>{{ kpi.icon }} {{ kpi.lbl }}</span></div>
+      <div class="val">{{ kpi.val }}</div>
+      <div class="sub">{{ kpi.sub }}</div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- ZONE 2: PERFORMANCE & SUBAGENT SWARM -->
+<div class="bento-grid">
+  <div class="bento-panel col-8">
+    <div class="panel-header">
+      <div class="panel-title">Session Workload Leaderboard</div>
+      <a href="/api/export/sessions.csv" class="btn" style="font-size:0.7rem;">Download CSV</a>
+    </div>
+    <div class="chart-box" data-chart="chart-top-sessions"></div>
+    <script type="application/json" id="chart-top-sessions">{{ vm.charts.top_sessions_chart | tojson }}</script>
+
+    <div style="margin-top:1rem;"></div>
+    <table class="data-table clickable">
+      <thead>
+        <tr><th>Session ID</th><th>Label</th><th>Kind</th><th>Tokens</th><th>Cost</th><th>Active</th></tr>
+      </thead>
+      <tbody>
+        {% for s in vm.session_rows %}
+          <tr hx-get="/partials/session-detail/{{ s.session_id }}" hx-target="#session-drawer-content"
+              onclick="openDrawer('session-drawer')">
+            <td class="mono">{{ s.session_id[:8] }}</td>
+            <td>{{ s.label }}</td>
+            <td><span class="btn" style="padding:0.1rem 0.4rem; font-size:0.65rem;">{{ s.kind }}</span></td>
+            <td class="mono">{{ s.total }}</td>
+            <td class="mono">{{ s.cost }}</td>
+            <td class="mono">{{ s.last_date }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bento-panel col-4">
+    <div class="panel-header"><div class="panel-title">Session Class Split</div></div>
+    <div class="chart-box" data-chart="chart-session-kinds"></div>
+    <script type="application/json" id="chart-session-kinds">{{ vm.charts.session_kinds_chart | tojson }}</script>
+
+    <div style="margin-top:12px;"></div>
+    <div class="chart-box" data-chart="chart-calls-sessions"></div>
+    <script type="application/json" id="chart-calls-sessions">{{ vm.charts.calls_vs_sessions_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Active (Busy) vs Idle (Waiting) Hours</div></div>
+    <div class="chart-box" data-chart="chart-time-budget"></div>
+    <script type="application/json" id="chart-time-budget">{{ vm.charts.time_budget_chart | tojson }}</script>
+    <div class="callout" style="font-size:0.7rem;">Gaps capped at 4h: an overnight pause counts as 4h, not 12h.</div>
+  </div>
+
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Reasoning Step Ratio (%)</div></div>
+    <div class="chart-box" data-chart="chart-thinking-ratio"></div>
+    <script type="application/json" id="chart-thinking-ratio">{{ vm.charts.thinking_ratio_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Tool Invocation Mix</div></div>
+    <div class="chart-box" data-chart="chart-tool-mix"></div>
+    <script type="application/json" id="chart-tool-mix">{{ vm.charts.tool_mix_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Tool Execution Latencies</div></div>
+    <table class="data-table">
+      <thead><tr><th>Tool</th><th>Calls</th><th>P50 Latency</th><th>P90 Latency</th><th>Total Time</th></tr></thead>
+      <tbody>
+        {% for r in vm.turn_rows %}
+          <tr><td class="mono">{{ r.tool }}</td><td class="mono">{{ r.calls }}</td><td class="mono">{{ r.p50 }}</td><td class="mono">{{ r.p90 }}</td><td class="mono">{{ r.total_min }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="kpi-strip" style="margin-top:1rem;">
+  {% for kpi in vm.swarm_kpis %}
+    <div class="kpi-card">
+      <div class="lbl">{{ kpi.icon }} {{ kpi.lbl }}</div>
+      <div class="val">{{ kpi.val }}</div>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="bento-grid" style="margin-top:1rem;">
+  <div class="bento-panel col-4">
+    <div class="panel-header"><div class="panel-title">Engine Switches</div></div>
+    <div class="chart-box" data-chart="chart-model-switches"></div>
+    <script type="application/json" id="chart-model-switches">{{ vm.charts.model_switches_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-4">
+    <div class="panel-header"><div class="panel-title">MCP Server Dispatches</div></div>
+    <div class="chart-box" data-chart="chart-mcp"></div>
+    <script type="application/json" id="chart-mcp">{{ vm.charts.mcp_invocations_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-4">
+    <div class="panel-header"><div class="panel-title">Artifacts & Messages</div></div>
+    <table class="data-table">
+      <thead><tr><th>Artifact</th><th>Gate</th></tr></thead>
+      <tbody>
+        {% for a in vm.artifact_rows %}
+          <tr><td class="mono">{{ a.name }}</td><td>{{ a.gate }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ZONE 3: FRICTION & RELIABILITY -->
+<div class="kpi-strip" style="margin-top:1rem;">
+  {% for kpi in vm.context_kpis %}
+    <div class="kpi-card">
+      <div class="lbl">{{ kpi.icon }} {{ kpi.lbl }}</div>
+      <div class="val">{{ kpi.val }}</div>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="bento-grid">
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Failure Steps per Day</div></div>
+    <div class="chart-box" data-chart="chart-failure-daily"></div>
+    <script type="application/json" id="chart-failure-daily">{{ vm.charts.failure_daily_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Top Repeated Failure Signatures</div></div>
+    <table class="data-table">
+      <thead><tr><th>Error Signature</th><th>Count</th></tr></thead>
+      <tbody>
+        {% for f in vm.fail_rows %}
+          <tr><td class="mono" style="color:var(--signal-rose);">{{ f.text }}</td><td class="mono">{{ f.count }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">User Approval Denials</div></div>
+    <table class="data-table">
+      <thead><tr><th>Date</th><th>Command</th><th>Wait</th></tr></thead>
+      <tbody>
+        {% for d in vm.denial_rows %}
+          <tr><td class="mono">{{ d.date }}</td><td class="mono">{{ d.command }}</td><td class="mono">{{ d.wait }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Slowest Shell Commands</div></div>
+    <table class="data-table">
+      <thead><tr><th>Command</th><th>Window</th><th>Exit</th></tr></thead>
+      <tbody>
+        {% for c in vm.cmd_rows %}
+          <tr><td class="mono">{{ c.command }}</td><td class="mono">{{ c.duration }}</td><td class="mono">{{ c.exit_code }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="callout" style="margin-top:1rem;">
+  <b>Execution Window Disclaimer:</b> CLI duration stamps reflect the full execution window including process queueing and waiting, not pure CPU stopwatch time.
+</div>

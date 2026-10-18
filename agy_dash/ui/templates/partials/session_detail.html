@@ -1,0 +1,81 @@
+<div style="margin-bottom:1rem;">
+  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+    <span class="mono" style="font-size:1.1rem; font-weight:700; color:var(--brand-accent);">{{ detail.session_id[:8] }}</span>
+    <span class="btn" style="padding:0.1rem 0.5rem; font-size:0.7rem;">{{ detail.kind | upper }}</span>
+  </div>
+  <div style="font-size:0.85rem; margin-top:0.25rem;">{{ detail.label }}</div>
+  {% if detail.meta and detail.meta.workspace %}
+    <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.2rem;" class="mono">Workspace: {{ detail.meta.workspace }}</div>
+  {% endif %}
+</div>
+
+<div class="kpi-strip" style="grid-template-columns: repeat(2, 1fr); margin-bottom:1rem;">
+  <div class="kpi-card">
+    <div class="lbl">TOTAL TOKENS</div>
+    <div class="val">{{ detail.tokens.total }}</div>
+    <div class="sub">{{ detail.tokens.fresh_in }} fresh · {{ detail.tokens.cached }} cached</div>
+  </div>
+  <div class="kpi-card">
+    <div class="lbl">API COST</div>
+    <div class="val">{{ detail.cost }}</div>
+    <div class="sub">{{ detail.calls }} model calls</div>
+  </div>
+</div>
+
+{% if detail.meta and detail.meta.parent_id %}
+  <div class="callout" style="font-size:0.75rem; margin-bottom:1rem;">
+    <b>Subagent Lineage:</b> Parent Session <code class="mono">{{ detail.meta.parent_id[:8] }}</code> · Role: {{ detail.meta.get('subagent_type', 'subagent') }}
+  </div>
+{% endif %}
+
+{% if detail.tools %}
+  <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem;">Tool Invocations</h4>
+  <table class="data-table" style="font-size:0.75rem;">
+    <thead><tr><th>Tool</th><th>Calls</th><th>Avg Time</th></tr></thead>
+    <tbody>
+      {% for t in detail.tools %}
+        <tr><td class="mono">{{ t.tool }}</td><td class="mono">{{ t.calls }}</td><td class="mono">{{ t.avg_sec }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+
+{% if detail.commands %}
+  <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem;">Shell Command Executions</h4>
+  <table class="data-table" style="font-size:0.72rem;">
+    <thead><tr><th>Command</th><th>Window</th><th>Exit</th></tr></thead>
+    <tbody>
+      {% for c in detail.commands %}
+        <tr>
+          <td class="mono" title="{{ c.command }}">{{ c.command[:45] }}</td>
+          <td class="mono">{{ c.duration }}</td>
+          <td class="mono">{{ c.exit_code }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+
+{% if detail.failures %}
+  <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem; color:var(--signal-rose);">Session Failures</h4>
+  <table class="data-table" style="font-size:0.72rem;">
+    <thead><tr><th>Date</th><th>Error Text</th></tr></thead>
+    <tbody>
+      {% for f in detail.failures %}
+        <tr><td class="mono">{{ f.date }}</td><td class="mono" style="color:var(--signal-rose);">{{ f.text[:70] }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+
+{% if detail.artifacts %}
+  <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem;">Generated Artifacts</h4>
+  <table class="data-table" style="font-size:0.72rem;">
+    <thead><tr><th>Artifact</th><th>Gate</th><th>Summary</th></tr></thead>
+    <tbody>
+      {% for a in detail.artifacts %}
+        <tr><td class="mono">{{ a.name }}</td><td class="mono">{{ a.gate }}</td><td>{{ a.summary }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}

@@ -1,0 +1,10 @@
+<div class="bento-panel" style="padding:0.75rem;"
+     {% if runner_state and runner_state.running %}hx-get="/api/jobs/status" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+  <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+    <span class="mono" style="font-size:0.75rem;">Status: <b>{{ runner_state.status | upper if runner_state else 'IDLE' }}</b></span>
+    <span class="mono" style="font-size:0.75rem;">Exit: {{ runner_state.exit_code if runner_state and runner_state.exit_code is not none else '-' }}</span>
+  </div>
+  {% if runner_state and runner_state.command %}
+    <pre class="mono" style="font-size:0.68rem; background:rgba(0,0,0,0.3); padding:0.4rem; border-radius:4px; overflow-x:auto;">{{ " ".join(runner_state.command) }}</pre>
+  {% endif %}
+</div>

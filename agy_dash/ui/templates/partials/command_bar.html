@@ -1,0 +1,62 @@
+<header class="command-bar">
+  <div class="brand">
+    <div style="font-family:var(--font-display); font-weight:800; font-size:0.95rem; letter-spacing:0.04em;">
+      ANTIGRAVITY <span style="color:var(--brand-accent);">//</span> TELEMETRY
+    </div>
+    <div class="badge-pill mono" title="Total Tokens Scanned">⚡ {{ ctx.overview.totals.total | fmt_tokens if ctx else '0' }}</div>
+    <div class="badge-pill mono" title="Modeled API Cost">💵 {{ ctx.money(ctx.overview.api_cost_usd) if ctx else '₹0' }}</div>
+  </div>
+
+  <nav class="view-nav">
+    <a href="?view=command" class="nav-tab {% if filters.view == 'command' %}active{% endif %}" data-view="command"
+       hx-get="/?view=command" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form" hx-push-url="true">
+       01 // COMMAND
+    </a>
+    <a href="?view=sessions" class="nav-tab {% if filters.view == 'sessions' %}active{% endif %}" data-view="sessions"
+       hx-get="/?view=sessions" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form" hx-push-url="true">
+       02 // SESSIONS
+    </a>
+    <a href="?view=economics" class="nav-tab {% if filters.view == 'economics' %}active{% endif %}" data-view="economics"
+       hx-get="/?view=economics" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form" hx-push-url="true">
+       03 // ECONOMICS
+    </a>
+  </nav>
+
+  <form id="global-filter-form" class="filter-strip" method="get" action="/"
+        hx-get="/" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-push-url="true">
+    <input type="hidden" name="view" value="{{ filters.view }}">
+    <input type="hidden" id="global-theme-input" name="theme" value="{{ filters.theme }}">
+
+    <input type="date" name="start" value="{{ filters.start }}" class="filter-input" title="Start Date">
+    <span style="color:var(--text-muted); font-size:0.75rem;">→</span>
+    <input type="date" name="end" value="{{ filters.end }}" class="filter-input" title="End Date">
+
+    <select name="model" class="filter-input" onchange="this.form.requestSubmit()">
+      {% for m in model_ids %}
+        <option value="{{ m }}" {% if m == filters.model_id %}selected{% endif %}>{{ m }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="currency" class="filter-input" onchange="this.form.requestSubmit()">
+      <option value="INR" {% if ctx.currency == 'INR' %}selected{% endif %}>INR (₹)</option>
+      <option value="USD" {% if ctx.currency == 'USD' %}selected{% endif %}>USD ($)</option>
+      <option value="EUR" {% if ctx.currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
+      <option value="GBP" {% if ctx.currency == 'GBP' %}selected{% endif %}>GBP (£)</option>
+    </select>
+
+    <input type="number" step="0.1" name="fx" value="{{ filters.fx }}" placeholder="FX" title="USD/INR rate" style="width:4.5rem;" class="filter-input">
+    <input type="number" step="100" name="sub" value="{{ filters.sub }}" placeholder="Sub" title="Subscription Spend" style="width:5.5rem;" class="filter-input">
+
+    <button type="submit" class="btn">Filter</button>
+    <a href="/?view={{ filters.view }}" class="btn">Reset</a>
+    <button type="button" class="btn" title="Refresh local scans"
+            hx-post="/api/refresh" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-headers='{"HX-Request":"true"}'>
+      🔄
+    </button>
+    <button type="button" class="btn" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+    <button type="button" class="btn" onclick="openDrawer('sync-drawer')" title="Operations & Snapshots">
+      <span class="status-dot {% if runner_state and runner_state.running %}running pulse{% else %}idle{% endif %}"></span>
+      ⚡ Sync & DB
+    </button>
+  </form>
+</header>

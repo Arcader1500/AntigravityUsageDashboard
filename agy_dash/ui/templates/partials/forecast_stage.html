@@ -1,5 +1,5 @@
 <div class="bento-panel col-12" style="margin-bottom:1rem; padding:0.75rem 1rem;">
-  <form hx-get="/partials/forecast-stage" hx-target="#forecast-stage-container" hx-swap="outerHTML" style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+  <form hx-get="/partials/forecast-stage" hx-target="#forecast-stage-container" hx-swap="innerHTML" hx-include="#global-filter-form" style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
     <span style="font-family:var(--font-display); font-weight:700; font-size:0.8rem;">STAGE 1 // FORECAST CONTROLS:</span>
     <select name="target" class="filter-input">
       <option value="Total tokens" {% if vm.fc_params.target == 'Total tokens' %}selected{% endif %}>Target: Total Tokens</option>
@@ -65,7 +65,9 @@
         {% endfor %}
       </tbody>
     </table>
-    <div class="callout" style="font-size:0.72rem;">Median forecast is <b>{{ vm.payback_pct }}</b> of subscription spend.</div>
+    {% if vm.payback_pct %}
+      <div class="callout" style="font-size:0.72rem;">Median forecast is <b>{{ vm.payback_pct }}</b> of subscription spend.</div>
+    {% endif %}
   </div>
 
   <div class="bento-panel col-6">

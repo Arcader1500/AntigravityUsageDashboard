@@ -15,10 +15,6 @@ def _cache_savings_usd(fresh_in: float, cached: float, prices: Any) -> float:
     return float(cached or 0) * max(getattr(prices, "input_usd", 0.0) - getattr(prices, "cached_usd", 0.0), 0.0) / 1e6
 
 
-if not hasattr(metrics, "cache_savings_usd"):
-    metrics.cache_savings_usd = _cache_savings_usd
-
-
 def build_command_view(ctx: common.Ctx, deep_data: deep.DeepData | None) -> dict[str, Any]:
     t = ctx.overview.totals
     o = ctx.overview
@@ -36,7 +32,7 @@ def build_command_view(ctx: common.Ctx, deep_data: deep.DeepData | None) -> dict
         {"lbl": "EQUIVALENT API COST", "val": common.fmt_money(ctx.to_currency(o.api_cost_usd), curr), "sub": f"{o.model_name} catalog", "icon": "💵", "badge": "METERED"},
         {"lbl": "SUBSCRIPTION SPEND", "val": common.fmt_money(sub_spend, curr), "sub": "fixed periodic spend", "icon": "💳", "badge": "FIXED"},
         {"lbl": "BLENDED EFFICIENCY", "val": common.fmt_rate(ctx.to_currency(o.blended_rate_usd_per_mtok), curr), "sub": f"{common.fmt_tokens(o.tokens_per_currency_spent)} tok/{curr}", "icon": "📊", "badge": "RATE"},
-        {"lbl": "CACHE SAVINGS", "val": common.fmt_money(ctx.to_currency(metrics.cache_savings_usd(t.fresh_in, t.cached, ctx.prices)), curr), "sub": "saved via reuse", "icon": "🛡️", "badge": "SAVED"},
+        {"lbl": "CACHE SAVINGS", "val": common.fmt_money(ctx.to_currency(getattr(metrics, "cache_savings_usd", _cache_savings_usd)(t.fresh_in, t.cached, ctx.prices)), curr), "sub": "saved via reuse", "icon": "🛡️", "badge": "SAVED"},
     ]
 
     sessions = ctx.usage.sessions if ctx.usage else ctx.sessions
@@ -442,7 +438,7 @@ def build_economics_view(
     }
 
     sub_spend_overview = ctx.overview.subscription_spend
-    payback_pct = common.fmt_pct(metrics.safe_div(fc.cumulative_median, sub_spend_overview), decimals=0) if sub_spend_overview > 0 else "-"
+    payback_pct = common.fmt_pct(metrics.safe_div(fc.cumulative_median, sub_spend_overview), decimals=0) if (unit is None and sub_spend_overview > 0) else None
 
     chart_payloads = {
         "forecast_chart": charts.forecast_fan(observed, fc, column, unit, ctx),
@@ -481,12 +477,14 @@ def build_sync_drawer(ctx: common.Ctx) -> dict[str, Any]:
     db_path = ctx.config.db_path if ctx.config else None
     if db_path:
         conn = snapshots.connect(db_path)
-        counts = snapshots.counts(conn)
         try:
-            runs_raw = snapshots.runs(conn, limit=10)
-        except TypeError:
-            runs_raw = snapshots.runs(conn)
-        conn.close()
+            counts = snapshots.counts(conn)
+            try:
+                runs_raw = snapshots.runs(conn, limit=10)
+            except TypeError:
+                runs_raw = snapshots.runs(conn)
+        finally:
+            conn.close()
     else:
         counts = {"session_facts": 0, "daily_facts": 0, "runs": 0}
         runs_raw = []

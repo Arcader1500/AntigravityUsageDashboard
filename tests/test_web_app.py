@@ -47,6 +47,23 @@ def test_session_detail_endpoint(client, usage):
     assert sid[:8] in res.text
 
 
+def test_session_detail_currency_usd(client, usage):
+    sid = usage.sessions["session_id"].iloc[0]
+    res = client.get(f"/partials/session-detail/{sid}?currency=USD")
+    assert res.status_code == 200
+    assert "$" in res.text
+
+
+def test_theme_cookie_sets_data_theme(client):
+    res_light = client.get("/", headers={"cookie": "agy_theme=light"})
+    assert res_light.status_code == 200
+    assert 'data-theme="light"' in res_light.text
+
+    res_dark = client.get("/", headers={"cookie": "agy_theme=dark"})
+    assert res_dark.status_code == 200
+    assert 'data-theme="dark"' in res_dark.text
+
+
 def test_forecast_and_lab_partials(client):
     res_fc = client.get("/partials/forecast-stage?target=Total+tokens&method=Bootstrap+resampling")
     assert res_fc.status_code == 200

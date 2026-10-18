@@ -50,7 +50,7 @@
     <button type="submit" class="btn">Filter</button>
     <a href="/?view={{ filters.view }}" class="btn">Reset</a>
     <button type="button" class="btn" title="Refresh local scans"
-            hx-post="/api/refresh" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-headers='{"HX-Request":"true"}'>
+            hx-post="/api/refresh" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form" hx-headers='{"HX-Request":"true"}'>
       🔄
     </button>
     <button type="button" class="btn" onclick="toggleTheme()" title="Toggle Theme">🌓</button>

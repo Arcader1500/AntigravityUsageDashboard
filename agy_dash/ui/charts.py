@@ -131,11 +131,14 @@ def workspace_attribution(ws_df: pd.DataFrame, ctx: common.Ctx) -> dict[str, Any
     opt = _base_chart(c, "Workspace Token Attribution")
     if ws_df is None or ws_df.empty:
         return _empty_cartesian(opt)
-    df = ws_df.nlargest(8, "total").iloc[::-1]
+    col = "total" if "total" in ws_df.columns else ("tokens" if "tokens" in ws_df.columns else None)
+    if not col:
+        return _empty_cartesian(opt)
+    df = ws_df.nlargest(8, col).iloc[::-1]
     opt["grid"] = {"top": 35, "right": 30, "bottom": 25, "left": 130}
     opt["xAxis"] = {"type": "value", "splitLine": {"lineStyle": {"color": c["grid"]}}}
     opt["yAxis"] = {"type": "category", "data": [str(p)[:22] for p in df["project"].fillna("(unknown)")], "axisLabel": {"color": c["muted"], "fontSize": 10}}
-    opt["series"] = [{"name": "Tokens", "type": "bar", "color": c["accent"], "data": df["total"].tolist()}]
+    opt["series"] = [{"name": "Tokens", "type": "bar", "color": c["accent"], "data": df[col].tolist()}]
     return opt
 
 

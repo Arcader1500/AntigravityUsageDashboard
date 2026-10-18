@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from agy_dash import config as cfgmod, deep, jobs, pricing, snapshots, source
-from agy_dash.ui import common, views
+from agy_dash.ui import charts, common, views
 from tests.conftest import MAIN_ID, SUB_ID, WORKSPACE
 
 
@@ -141,19 +141,30 @@ def test_build_session_detail(usage, data):
 def test_build_economics_view_targets_and_methods(usage):
     ctx = _make_ctx(usage)
 
-    # Target: API-equivalent cost
+    # Target: API-equivalent cost (payback_pct computed)
     fc_params_cost = {"target": "API-equivalent cost", "method": "Linear extrapolation (baseline)", "horizon": 14, "daily_growth": 0.05}
     res_cost = views.build_economics_view(ctx, fc_params_cost, {})
     assert len(res_cost["schedule_rows"]) == 14
     assert res_cost["fc_params"]["target"] == "API-equivalent cost"
+    assert res_cost["payback_pct"] is not None
+    assert res_cost["payback_pct"].endswith("%")
 
-    # Method: Monte Carlo simulation with What-If lab params
+    # Method: Monte Carlo simulation with What-If lab params (target: Total tokens, payback_pct is None)
     fc_params_mc = {"target": "Total tokens", "method": "Monte Carlo simulation", "horizon": 7, "mc_growth": 0.02, "mc_sd": 0.2}
     lab_params = {"use_ratio": True, "ratio": 80, "output_mult": 1.2, "prompt_mult": 1.5, "chosen_models": ["claude-sonnet", "gemini-3.8-flash"]}
     res_mc = views.build_economics_view(ctx, fc_params_mc, lab_params)
     assert len(res_mc["schedule_rows"]) == 7
     assert len(res_mc["cmp_rows"]) == 2
     assert res_mc["lab_params"]["ratio"] == 80.0
+    assert res_mc["payback_pct"] is None
+
+
+def test_workspace_attribution_chart(usage):
+    ctx = _make_ctx(usage)
+    df_tokens = pd.DataFrame([{"project": "ProjA", "tokens": 1000}, {"project": "ProjB", "tokens": 2000}])
+    chart = charts.workspace_attribution(df_tokens, ctx)
+    assert "series" in chart
+    assert chart["series"][0]["data"] == [1000, 2000]
 
 
 def test_build_sync_drawer(usage, tmp_path):

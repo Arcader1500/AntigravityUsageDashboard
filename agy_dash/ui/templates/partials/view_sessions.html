@@ -2,15 +2,15 @@
 <div class="bento-panel col-12" style="margin-bottom:1rem; padding:0.6rem 0.85rem; display:flex; justify-content:space-between; align-items:center;">
   <div style="display:flex; gap:0.4rem; align-items:center;">
     <span style="font-size:0.72rem; color:var(--text-muted); margin-right:0.3rem;">KIND:</span>
-    <button type="button" class="btn" hx-get="/?view=sessions" hx-target="#workspace-canvas" hx-swap="outerHTML">All</button>
-    <button type="button" class="btn" hx-get="/?view=sessions&kind=main" hx-target="#workspace-canvas" hx-swap="outerHTML">Main</button>
-    <button type="button" class="btn" hx-get="/?view=sessions&kind=subagent" hx-target="#workspace-canvas" hx-swap="outerHTML">Subagent</button>
-    <button type="button" class="btn" hx-get="/?view=sessions&kind=other" hx-target="#workspace-canvas" hx-swap="outerHTML">Other</button>
+    <button type="button" class="btn" hx-get="/?view=sessions" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form">All</button>
+    <button type="button" class="btn" hx-get="/?view=sessions&kind=main" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form">Main</button>
+    <button type="button" class="btn" hx-get="/?view=sessions&kind=subagent" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form">Subagent</button>
+    <button type="button" class="btn" hx-get="/?view=sessions&kind=other" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form">Other</button>
   </div>
   <div style="display:flex; gap:0.5rem; align-items:center;">
     <input type="search" name="search" placeholder="Search sessions..." class="filter-input" style="width:14rem;"
-           hx-get="/?view=sessions" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-trigger="keyup changed delay:300ms">
-    <button type="button" class="btn" hx-post="/api/refresh?scope=deep" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-headers='{"HX-Request":"true"}'>🔄 Rescan Deep</button>
+           hx-get="/?view=sessions" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form" hx-trigger="keyup changed delay:300ms">
+    <button type="button" class="btn" hx-post="/api/refresh?scope=deep" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form" hx-headers='{"HX-Request":"true"}'>🔄 Rescan Deep</button>
   </div>
 </div>
 
@@ -42,7 +42,7 @@
       <tbody>
         {% for s in vm.session_rows %}
           <tr hx-get="/partials/session-detail/{{ s.session_id }}" hx-target="#session-drawer-content"
-              onclick="openDrawer('session-drawer')">
+              hx-include="#global-filter-form" onclick="openDrawer('session-drawer')">
             <td class="mono">{{ s.session_id[:8] }}</td>
             <td>{{ s.label }}</td>
             <td><span class="btn" style="padding:0.1rem 0.4rem; font-size:0.65rem;">{{ s.kind }}</span></td>

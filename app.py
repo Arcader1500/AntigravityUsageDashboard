@@ -46,6 +46,8 @@ def _get_context_and_filters(request: Request):
     entries = state.load_catalog()
     model_ids = [e.model_id for e in entries]
     query_params = dict(request.query_params)
+    if request.cookies.get("agy_theme"):
+        query_params.setdefault("theme", request.cookies.get("agy_theme"))
     filters = state.parse_filters(query_params, cfg, usage, model_ids)
     ctx = state.build_context(cfg, usage, entries, filters, runner=state.get_runner(cfg))
     return cfg, usage, entries, model_ids, query_params, filters, ctx
@@ -65,6 +67,8 @@ def index(request: Request):
     entries = state.load_catalog()
     model_ids = [e.model_id for e in entries]
     query_params = dict(request.query_params)
+    if request.cookies.get("agy_theme"):
+        query_params.setdefault("theme", request.cookies.get("agy_theme"))
     filters = state.parse_filters(query_params, cfg, usage, model_ids)
 
     try:
@@ -126,7 +130,10 @@ def session_detail(request: Request, session_id: str):
     cfg = cfgmod.get_config()
     usage = state.load_usage(cfg)
     entries = state.load_catalog()
-    filters = state.parse_filters({}, cfg, usage, [e.model_id for e in entries])
+    query_params = dict(request.query_params)
+    if request.cookies.get("agy_theme"):
+        query_params.setdefault("theme", request.cookies.get("agy_theme"))
+    filters = state.parse_filters(query_params, cfg, usage, [e.model_id for e in entries])
     ctx = state.build_context(cfg, usage, entries, filters, runner=None)
     deep_data = state.load_deep(str(cfg.brain_root))
     detail = views.build_session_detail(ctx, deep_data, session_id)
@@ -152,9 +159,11 @@ def save_snapshot(request: Request, hx_request: Annotated[str | None, Header()] 
     usage = state.load_usage(cfg)
     try:
         conn = snapshots.connect(cfg.db_path)
-        info = snapshots.ingest(conn, usage)
-        cnt = snapshots.counts(conn)
-        conn.close()
+        try:
+            info = snapshots.ingest(conn, usage)
+            cnt = snapshots.counts(conn)
+        finally:
+            conn.close()
         return HTMLResponse(f"<span style='color:var(--signal-emerald);'>Snapshot recorded: {info['sessions']} sessions ({cnt['runs']} total runs).</span>")
     except Exception as exc:
         return HTMLResponse(f"<span style='color:var(--signal-rose);'>Snapshot failed: {exc}</span>", status_code=500)

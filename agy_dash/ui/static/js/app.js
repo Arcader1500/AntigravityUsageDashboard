@@ -74,7 +74,8 @@
   document.addEventListener('htmx:afterSwap', (evt) => {
     const target = evt.detail.target;
     if (target) {
-      window.initCharts(target);
+      const root = document.contains(target) ? target : document;
+      window.initCharts(root);
       // Synchronize active nav tab
       const urlParams = new URLSearchParams(window.location.search);
       const activeView = urlParams.get('view') || 'command';

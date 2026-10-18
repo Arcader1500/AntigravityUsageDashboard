@@ -25,7 +25,7 @@
   </form>
 </div>
 
-<div class="kpi-strip" style="grid-template-columns: repeat(4, 1fr);">
+<div class="kpi-strip">
   <div class="kpi-card"><div class="lbl">BASELINE FRESH</div><div class="val">{{ vm.workload_baseline.fresh_in }}</div></div>
   <div class="kpi-card"><div class="lbl">BASELINE CACHED</div><div class="val">{{ vm.workload_baseline.cached }}</div></div>
   <div class="kpi-card"><div class="lbl">BASELINE OUTPUT</div><div class="val">{{ vm.workload_baseline.output }}</div></div>
@@ -41,24 +41,27 @@
     <div class="chart-box" data-chart="chart-benchmark"></div>
     <script type="application/json" id="chart-benchmark">{{ vm.charts.benchmark_chart | tojson }}</script>
 
-    <table class="data-table" style="margin-top:1rem;">
-      <thead>
-        <tr><th>Model</th><th>Vendor</th><th>Workload Cost</th><th>Rate/MTok</th><th>Tokens/Spend</th><th>vs Cheapest</th><th>Pricing As Of</th></tr>
-      </thead>
-      <tbody>
-        {% for r in vm.cmp_rows %}
-          <tr>
-            <td class="mono">{{ r.model }}</td>
-            <td>{{ r.vendor }}</td>
-            <td class="mono">{{ r.cost }}</td>
-            <td class="mono">{{ r.cost_per_mtok }}</td>
-            <td class="mono">{{ r.tokens_per_curr }}</td>
-            <td class="mono">{{ r.vs_cheapest }}</td>
-            <td class="mono" style="font-size:0.7rem;">{{ r.version_date }} {% if r.estimate %}<span style="color:var(--signal-amber);">[Est]</span>{% endif %}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div style="margin-top:1rem;"></div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr><th>Model</th><th>Vendor</th><th>Workload Cost</th><th>Rate/MTok</th><th>Tokens/Spend</th><th>vs Cheapest</th><th>Pricing As Of</th></tr>
+        </thead>
+        <tbody>
+          {% for r in vm.cmp_rows %}
+            <tr>
+              <td class="mono cell-truncate" title="{{ r.model }}">{{ r.model }}</td>
+              <td>{{ r.vendor }}</td>
+              <td class="mono">{{ r.cost }}</td>
+              <td class="mono">{{ r.cost_per_mtok }}</td>
+              <td class="mono">{{ r.tokens_per_curr }}</td>
+              <td class="mono">{{ r.vs_cheapest }}</td>
+              <td class="mono" style="font-size:0.7rem;">{{ r.version_date }} {% if r.estimate %}<span style="color:var(--signal-amber);">[Est]</span>{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     <div class="callout" style="font-size:0.72rem; margin-top:0.75rem;">
       <b>Honesty Guarantee:</b> Simulations assume identical token volumes across engines; reasoning token expansion and prompt-caching behaviors differ significantly in real execution.
     </div>
@@ -66,7 +69,7 @@
 
   <div class="bento-panel col-5">
     <div class="panel-header"><div class="panel-title">Fixed Subscription vs Metered Value</div></div>
-    <div class="kpi-strip" style="grid-template-columns:1fr 1fr; margin-bottom:1rem;">
+    <div class="kpi-strip" style="grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); margin-bottom:1rem;">
       <div class="kpi-card">
         <div class="lbl">Actual Subscription</div>
         <div class="val">{{ vm.sub_card.actual_spend }}</div>

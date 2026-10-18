@@ -21,14 +21,8 @@ def _base_chart(c: dict[str, str], title: str | None = None) -> dict[str, Any]:
             "textStyle": {"color": c["text"], "fontFamily": "JetBrains Mono, monospace", "fontSize": 12},
             "axisPointer": {"lineStyle": {"color": c["border"], "type": "dashed"}},
         },
-        "grid": {"top": 45, "right": 20, "bottom": 35, "left": 55, "containLabel": True},
+        "grid": {"top": 35, "right": 25, "bottom": 30, "left": 20, "containLabel": True},
     }
-    if title:
-        opt["title"] = {
-            "text": title,
-            "textStyle": {"color": c["text"], "fontSize": 13, "fontWeight": 600, "fontFamily": "Syne, sans-serif"},
-            "left": 0, "top": 5,
-        }
     return opt
 
 
@@ -52,8 +46,9 @@ def daily_burn(ctx: common.Ctx) -> dict[str, Any]:
 
     opt["legend"] = {
         "data": ["Fresh Input", "Cached Input", "Output & Reasoning", f"API Cost ({ctx.currency})"],
-        "textStyle": {"color": c["muted"], "fontSize": 11},
-        "top": 5, "right": 0,
+        "textStyle": {"color": c["muted"], "fontSize": 11, "fontFamily": "Plus Jakarta Sans, sans-serif"},
+        "top": 0, "right": 10,
+        "type": "scroll",
     }
     opt["xAxis"] = {
         "type": "category", "data": dates,
@@ -135,7 +130,7 @@ def workspace_attribution(ws_df: pd.DataFrame, ctx: common.Ctx) -> dict[str, Any
     if not col:
         return _empty_cartesian(opt)
     df = ws_df.nlargest(8, col).iloc[::-1]
-    opt["grid"] = {"top": 35, "right": 30, "bottom": 25, "left": 130}
+    opt["grid"] = {"top": 15, "right": 25, "bottom": 20, "left": 10, "containLabel": True}
     opt["xAxis"] = {"type": "value", "splitLine": {"lineStyle": {"color": c["grid"]}}}
     opt["yAxis"] = {"type": "category", "data": [str(p)[:22] for p in df["project"].fillna("(unknown)")], "axisLabel": {"color": c["muted"], "fontSize": 10}}
     opt["series"] = [{"name": "Tokens", "type": "bar", "color": c["accent"], "data": df[col].tolist()}]
@@ -177,7 +172,7 @@ def top_sessions(sessions_df: pd.DataFrame, top_n: int, ctx: common.Ctx) -> dict
             "sessionId": getattr(row, "session_id", ""),
             "kind": kind,
         })
-    opt["grid"] = {"top": 35, "right": 40, "bottom": 25, "left": 160}
+    opt["grid"] = {"top": 15, "right": 30, "bottom": 20, "left": 10, "containLabel": True}
     opt["xAxis"] = {"type": "value", "splitLine": {"lineStyle": {"color": c["grid"]}}}
     opt["yAxis"] = {"type": "category", "data": labels, "axisLabel": {"color": c["muted"], "fontSize": 10}}
     opt["series"] = [{"type": "bar", "data": data}]
@@ -264,7 +259,7 @@ def tool_mix(counters: dict, ctx: common.Ctx) -> dict[str, Any]:
     if not tools:
         return _empty_cartesian(opt)
     s = pd.Series(tools).sort_values().tail(12)
-    opt["grid"] = {"top": 35, "right": 30, "bottom": 25, "left": 130}
+    opt["grid"] = {"top": 15, "right": 25, "bottom": 20, "left": 10, "containLabel": True}
     opt["xAxis"] = {"type": "value", "splitLine": {"lineStyle": {"color": c["grid"]}}}
     opt["yAxis"] = {"type": "category", "data": s.index.tolist(), "axisLabel": {"color": c["muted"], "fontSize": 10}}
     opt["series"] = [{"type": "bar", "data": s.values.tolist(), "itemStyle": {"color": c["accent"]}}]
@@ -306,7 +301,7 @@ def mcp_invocations(counters: dict, ctx: common.Ctx) -> dict[str, Any]:
     if not servers:
         return _empty_cartesian(opt)
     s = pd.Series(servers).sort_values().tail(8)
-    opt["grid"] = {"top": 35, "right": 30, "bottom": 25, "left": 110}
+    opt["grid"] = {"top": 15, "right": 25, "bottom": 20, "left": 10, "containLabel": True}
     opt["xAxis"] = {"type": "value", "splitLine": {"lineStyle": {"color": c["grid"]}}}
     opt["yAxis"] = {"type": "category", "data": s.index.tolist(), "axisLabel": {"color": c["muted"], "fontSize": 10}}
     opt["series"] = [{"type": "bar", "data": s.values.tolist(), "itemStyle": {"color": c["cached"]}}]
@@ -380,10 +375,10 @@ def model_benchmark(cmp_df: pd.DataFrame, ctx: common.Ctx) -> dict[str, Any]:
             "value": cost_curr,
             "itemStyle": {"color": c["warn"] if estimate else c["accent"], "borderRadius": [0, 4, 4, 0]},
         })
-    opt["grid"] = {"top": 35, "right": 50, "bottom": 25, "left": 140}
+    opt["grid"] = {"top": 15, "right": 70, "bottom": 20, "left": 10, "containLabel": True}
     opt["xAxis"] = {"type": "value", "splitLine": {"lineStyle": {"color": c["grid"]}}}
     opt["yAxis"] = {"type": "category", "data": cmp_df["model"].tolist(), "axisLabel": {"color": c["muted"], "fontSize": 10}}
-    opt["series"] = [{"type": "bar", "data": data, "label": {"show": True, "position": "right", "color": c["text"]}}]
+    opt["series"] = [{"type": "bar", "data": data, "label": {"show": True, "position": "right", "color": c["text"], "fontFamily": "JetBrains Mono", "fontSize": 10}}]
     return opt
 
 
@@ -392,7 +387,7 @@ def subscription_comparison(ctx: common.Ctx) -> dict[str, Any]:
     opt = _base_chart(c, f"Actual Spend vs Metered Equivalent ({ctx.currency})")
     sub_spend = ctx.overview.subscription_spend if ctx.overview else 0.0
     api_val = ctx.to_currency(ctx.overview.api_cost_usd) if ctx.overview else 0.0
-    opt["grid"] = {"top": 35, "right": 40, "bottom": 25, "left": 140}
+    opt["grid"] = {"top": 15, "right": 65, "bottom": 20, "left": 10, "containLabel": True}
     opt["xAxis"] = {"type": "value", "splitLine": {"lineStyle": {"color": c["grid"]}}}
     opt["yAxis"] = {
         "type": "category",

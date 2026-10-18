@@ -35,24 +35,26 @@
     <script type="application/json" id="chart-top-sessions">{{ vm.charts.top_sessions_chart | tojson }}</script>
 
     <div style="margin-top:1rem;"></div>
-    <table class="data-table clickable">
-      <thead>
-        <tr><th>Session ID</th><th>Label</th><th>Kind</th><th>Tokens</th><th>Cost</th><th>Active</th></tr>
-      </thead>
-      <tbody>
-        {% for s in vm.session_rows %}
-          <tr hx-get="/partials/session-detail/{{ s.session_id }}" hx-target="#session-drawer-content"
-              hx-include="#global-filter-form" onclick="openDrawer('session-drawer')">
-            <td class="mono">{{ s.session_id[:8] }}</td>
-            <td>{{ s.label }}</td>
-            <td><span class="btn" style="padding:0.1rem 0.4rem; font-size:0.65rem;">{{ s.kind }}</span></td>
-            <td class="mono">{{ s.total }}</td>
-            <td class="mono">{{ s.cost }}</td>
-            <td class="mono">{{ s.last_date }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class="data-table clickable">
+        <thead>
+          <tr><th>Session ID</th><th>Label</th><th>Kind</th><th>Tokens</th><th>Cost</th><th>Active</th></tr>
+        </thead>
+        <tbody>
+          {% for s in vm.session_rows %}
+            <tr hx-get="/partials/session-detail/{{ s.session_id }}" hx-target="#session-drawer-content"
+                hx-include="#global-filter-form" onclick="openDrawer('session-drawer')">
+              <td class="mono">{{ s.session_id[:8] }}</td>
+              <td class="cell-label" title="{{ s.label }}">{{ s.label }}</td>
+              <td><span class="btn" style="padding:0.1rem 0.4rem; font-size:0.65rem;">{{ s.kind }}</span></td>
+              <td class="mono">{{ s.total }}</td>
+              <td class="mono">{{ s.cost }}</td>
+              <td class="mono">{{ s.last_date }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="bento-panel col-4">
@@ -86,14 +88,16 @@
 
   <div class="bento-panel col-6">
     <div class="panel-header"><div class="panel-title">Tool Execution Latencies</div></div>
-    <table class="data-table">
-      <thead><tr><th>Tool</th><th>Calls</th><th>P50 Latency</th><th>P90 Latency</th><th>Total Time</th></tr></thead>
-      <tbody>
-        {% for r in vm.turn_rows %}
-          <tr><td class="mono">{{ r.tool }}</td><td class="mono">{{ r.calls }}</td><td class="mono">{{ r.p50 }}</td><td class="mono">{{ r.p90 }}</td><td class="mono">{{ r.total_min }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>Tool</th><th>Calls</th><th>P50 Latency</th><th>P90 Latency</th><th>Total Time</th></tr></thead>
+        <tbody>
+          {% for r in vm.turn_rows %}
+            <tr><td class="mono cell-truncate" title="{{ r.tool }}">{{ r.tool }}</td><td class="mono">{{ r.calls }}</td><td class="mono">{{ r.p50 }}</td><td class="mono">{{ r.p90 }}</td><td class="mono">{{ r.total_min }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -121,14 +125,16 @@
 
   <div class="bento-panel col-4">
     <div class="panel-header"><div class="panel-title">Artifacts & Messages</div></div>
-    <table class="data-table">
-      <thead><tr><th>Artifact</th><th>Gate</th></tr></thead>
-      <tbody>
-        {% for a in vm.artifact_rows %}
-          <tr><td class="mono">{{ a.name }}</td><td>{{ a.gate }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>Artifact</th><th>Gate</th></tr></thead>
+        <tbody>
+          {% for a in vm.artifact_rows %}
+            <tr><td class="mono cell-truncate" title="{{ a.name }}">{{ a.name }}</td><td>{{ a.gate }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -151,38 +157,44 @@
 
   <div class="bento-panel col-6">
     <div class="panel-header"><div class="panel-title">Top Repeated Failure Signatures</div></div>
-    <table class="data-table">
-      <thead><tr><th>Error Signature</th><th>Count</th></tr></thead>
-      <tbody>
-        {% for f in vm.fail_rows %}
-          <tr><td class="mono" style="color:var(--signal-rose);">{{ f.text }}</td><td class="mono">{{ f.count }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>Error Signature</th><th>Count</th></tr></thead>
+        <tbody>
+          {% for f in vm.fail_rows %}
+            <tr><td class="mono cell-truncate" style="color:var(--signal-rose);" title="{{ f.text }}">{{ f.text }}</td><td class="mono">{{ f.count }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="bento-panel col-6">
     <div class="panel-header"><div class="panel-title">User Approval Denials</div></div>
-    <table class="data-table">
-      <thead><tr><th>Date</th><th>Command</th><th>Wait</th></tr></thead>
-      <tbody>
-        {% for d in vm.denial_rows %}
-          <tr><td class="mono">{{ d.date }}</td><td class="mono">{{ d.command }}</td><td class="mono">{{ d.wait }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>Date</th><th>Command</th><th>Wait</th></tr></thead>
+        <tbody>
+          {% for d in vm.denial_rows %}
+            <tr><td class="mono">{{ d.date }}</td><td class="mono cell-truncate" title="{{ d.command }}">{{ d.command }}</td><td class="mono">{{ d.wait }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="bento-panel col-6">
     <div class="panel-header"><div class="panel-title">Slowest Shell Commands</div></div>
-    <table class="data-table">
-      <thead><tr><th>Command</th><th>Window</th><th>Exit</th></tr></thead>
-      <tbody>
-        {% for c in vm.cmd_rows %}
-          <tr><td class="mono">{{ c.command }}</td><td class="mono">{{ c.duration }}</td><td class="mono">{{ c.exit_code }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>Command</th><th>Window</th><th>Exit</th></tr></thead>
+        <tbody>
+          {% for c in vm.cmd_rows %}
+            <tr><td class="mono cell-truncate" title="{{ c.command }}">{{ c.command }}</td><td class="mono">{{ c.duration }}</td><td class="mono">{{ c.exit_code }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 <div class="callout" style="margin-top:1rem;">

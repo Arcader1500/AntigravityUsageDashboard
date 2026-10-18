@@ -39,6 +39,15 @@ def test_switch_workspace_views(client):
         res = client.get(f"/?view={view}")
         assert res.status_code == 200
 
+    # Ensure duplicate view query parameter from hx-include honors the explicit tab target
+    res_sessions = client.get("/?view=sessions&view=command")
+    assert res_sessions.status_code == 200
+    assert "Session Workload Leaderboard" in res_sessions.text
+
+    res_econ = client.get("/?view=economics&view=command")
+    assert res_econ.status_code == 200
+    assert "STAGE 1 // FORECAST CONTROLS" in res_econ.text
+
 
 def test_session_detail_endpoint(client, usage):
     sid = usage.sessions["session_id"].iloc[0]

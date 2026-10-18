@@ -57,14 +57,16 @@
       <div class="panel-title">Cumulative Horizon Summary</div>
       <a href="/api/export/forecast.csv" class="btn" style="font-size:0.7rem;">Download CSV</a>
     </div>
-    <table class="data-table" style="margin-bottom:1rem;">
-      <thead><tr><th>Percentile</th><th>Volume</th></tr></thead>
-      <tbody>
-        {% for s in vm.fc_summary %}
-          <tr><td>{{ s.tier }}</td><td class="mono">{{ s.val }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-container" style="margin-bottom:1rem;">
+      <table class="data-table">
+        <thead><tr><th>Percentile</th><th>Volume</th></tr></thead>
+        <tbody>
+          {% for s in vm.fc_summary %}
+            <tr><td>{{ s.tier }}</td><td class="mono">{{ s.val }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% if vm.payback_pct %}
       <div class="callout" style="font-size:0.72rem;">Median forecast is <b>{{ vm.payback_pct }}</b> of subscription spend.</div>
     {% endif %}
@@ -78,7 +80,7 @@
 
   <div class="bento-panel col-6">
     <div class="panel-header"><div class="panel-title">Daily Projected Schedule</div></div>
-    <div style="max-height:260px; overflow-y:auto;">
+    <div class="table-container" style="max-height:260px; overflow-y:auto;">
       <table class="data-table">
         <thead><tr><th>Date</th><th>P10 Floor</th><th>P50 Median</th><th>P90 Surge</th></tr></thead>
         <tbody>

@@ -46,6 +46,9 @@ def _get_context_and_filters(request: Request):
     entries = state.load_catalog()
     model_ids = [e.model_id for e in entries]
     query_params = dict(request.query_params)
+    raw_views = request.query_params.getlist("view")
+    if raw_views:
+        query_params["view"] = raw_views[0]
     if request.cookies.get("agy_theme"):
         query_params.setdefault("theme", request.cookies.get("agy_theme"))
     filters = state.parse_filters(query_params, cfg, usage, model_ids)
@@ -67,6 +70,9 @@ def index(request: Request):
     entries = state.load_catalog()
     model_ids = [e.model_id for e in entries]
     query_params = dict(request.query_params)
+    raw_views = request.query_params.getlist("view")
+    if raw_views:
+        query_params["view"] = raw_views[0]
     if request.cookies.get("agy_theme"):
         query_params.setdefault("theme", request.cookies.get("agy_theme"))
     filters = state.parse_filters(query_params, cfg, usage, model_ids)

@@ -53,20 +53,22 @@
     </div>
 
     <h4 style="margin:1.5rem 0 0.5rem 0; font-size:0.8rem;">Historical Ingestion Runs</h4>
-    <table class="data-table" style="font-size:0.72rem;">
-      <thead><tr><th>Run</th><th>Started</th><th>Duration</th><th>Report</th><th>Status</th></tr></thead>
-      <tbody>
-        {% for r in sync_data.runs %}
-          <tr>
-            <td class="mono">#{{ r.run_id }}</td>
-            <td class="mono">{{ r.started_at[:19] }}</td>
-            <td class="mono">{{ r.duration_seconds }}s</td>
-            <td class="mono">{{ r.report }}</td>
-            <td class="mono">{{ r.status }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-container">
+      <table class="data-table" style="font-size:0.72rem;">
+        <thead><tr><th>Run</th><th>Started</th><th>Duration</th><th>Report</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for r in sync_data.runs %}
+            <tr>
+              <td class="mono">#{{ r.run_id }}</td>
+              <td class="mono">{{ r.started_at[:19] }}</td>
+              <td class="mono">{{ r.duration_seconds }}s</td>
+              <td class="mono">{{ r.report }}</td>
+              <td class="mono">{{ r.status }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
     <details style="margin-top:1rem;">
       <summary style="font-size:0.75rem; cursor:pointer; color:var(--text-muted);">Standard Output (stdout)</summary>

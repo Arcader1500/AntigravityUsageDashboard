@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>Telemetry Error</title>
+  <link rel="stylesheet" href="/static/css/telemetry.css">
+</head>
+<body style="display:flex; align-items:center; justify-content:center; height:100vh;">
+  <div class="bento-panel col-6" style="max-width:600px; border-color:var(--signal-rose);">
+    <h3 style="color:var(--signal-rose); margin-bottom:0.5rem;">Telemetry Fault Encountered</h3>
+    <p style="margin-bottom:1rem;">{{ message }}</p>
+    {% if hint %}
+      <div class="callout">{{ hint }}</div>
+    {% endif %}
+    <a href="/" class="btn btn-primary" style="margin-top:1rem;">Return to Command Center</a>
+  </div>
+</body>
+</html>

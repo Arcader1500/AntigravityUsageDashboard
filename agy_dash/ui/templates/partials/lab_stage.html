@@ -1,0 +1,88 @@
+<div class="bento-panel col-12" style="margin-bottom:1rem; padding:0.75rem 1rem;">
+  <form hx-get="/partials/lab-stage" hx-target="#lab-stage-container" hx-swap="innerHTML" hx-include="#global-filter-form">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+      <span style="font-family:var(--font-display); font-weight:700; font-size:0.8rem;">STAGE 2 // WHAT-IF SIMULATOR CONTROLS:</span>
+      <button type="submit" class="btn btn-primary">Simulate Scenario</button>
+    </div>
+    <div style="display:flex; gap:1.25rem; flex-wrap:wrap; align-items:center;">
+      <label style="font-size:0.75rem;">Prompt Multiplier:
+        <input type="number" step="0.1" min="0.1" max="5.0" name="prompt_mult" value="{{ vm.lab_params.prompt_mult }}" class="filter-input" style="width:4.5rem;">
+      </label>
+      <label style="font-size:0.75rem;">Output Multiplier:
+        <input type="number" step="0.1" min="0.1" max="5.0" name="output_mult" value="{{ vm.lab_params.output_mult }}" class="filter-input" style="width:4.5rem;">
+      </label>
+      <label style="font-size:0.75rem;">
+        <input type="checkbox" name="use_ratio" value="true" {% if vm.lab_params.use_ratio %}checked{% endif %}> Override Cache Hit Rate:
+        <input type="number" step="1" min="0" max="100" name="ratio" value="{{ vm.lab_params.ratio }}" class="filter-input" style="width:4rem;">%
+      </label>
+    </div>
+    <div style="display:flex; gap:0.75rem; margin-top:0.75rem; flex-wrap:wrap; font-size:0.72rem;">
+      <span style="color:var(--text-muted);">Compare Models:</span>
+      {% for m in vm.available_models %}
+        <label><input type="checkbox" name="chosen_models" value="{{ m.id }}" {% if m.checked %}checked{% endif %}> {{ m.id }}</label>
+      {% endfor %}
+    </div>
+  </form>
+</div>
+
+<div class="kpi-strip">
+  <div class="kpi-card"><div class="lbl">BASELINE FRESH</div><div class="val">{{ vm.workload_baseline.fresh_in }}</div></div>
+  <div class="kpi-card"><div class="lbl">BASELINE CACHED</div><div class="val">{{ vm.workload_baseline.cached }}</div></div>
+  <div class="kpi-card"><div class="lbl">BASELINE OUTPUT</div><div class="val">{{ vm.workload_baseline.output }}</div></div>
+  <div class="kpi-card"><div class="lbl">BASELINE HIT RATE</div><div class="val">{{ vm.workload_baseline.cache_hit_rate }}</div></div>
+</div>
+
+<div class="bento-grid">
+  <div class="bento-panel col-7">
+    <div class="panel-header">
+      <div class="panel-title">What-If Multi-Model Benchmark</div>
+      <button type="button" class="btn" onclick="openDrawer('catalog-drawer')">Price Catalog</button>
+    </div>
+    <div class="chart-box" data-chart="chart-benchmark"></div>
+    <script type="application/json" id="chart-benchmark">{{ vm.charts.benchmark_chart | tojson }}</script>
+
+    <div style="margin-top:1rem;"></div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr><th>Model</th><th>Vendor</th><th>Workload Cost</th><th>Rate/MTok</th><th>Tokens/Spend</th><th>vs Cheapest</th><th>Pricing As Of</th></tr>
+        </thead>
+        <tbody>
+          {% for r in vm.cmp_rows %}
+            <tr>
+              <td class="mono cell-truncate" title="{{ r.model }}">{{ r.model }}</td>
+              <td>{{ r.vendor }}</td>
+              <td class="mono">{{ r.cost }}</td>
+              <td class="mono">{{ r.cost_per_mtok }}</td>
+              <td class="mono">{{ r.tokens_per_curr }}</td>
+              <td class="mono">{{ r.vs_cheapest }}</td>
+              <td class="mono" style="font-size:0.7rem;">{{ r.version_date }} {% if r.estimate %}<span style="color:var(--signal-amber);">[Est]</span>{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="callout" style="font-size:0.72rem; margin-top:0.75rem;">
+      <b>Honesty Guarantee:</b> Simulations assume identical token volumes across engines; reasoning token expansion and prompt-caching behaviors differ significantly in real execution.
+    </div>
+  </div>
+
+  <div class="bento-panel col-5">
+    <div class="panel-header"><div class="panel-title">Fixed Subscription vs Metered Value</div></div>
+    <div class="kpi-strip" style="grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); margin-bottom:1rem;">
+      <div class="kpi-card">
+        <div class="lbl">Actual Subscription</div>
+        <div class="val">{{ vm.sub_card.actual_spend }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="lbl">API Value (Selected)</div>
+        <div class="val">{{ vm.sub_card.api_val }}</div>
+      </div>
+    </div>
+    <div class="chart-box" data-chart="chart-sub"></div>
+    <script type="application/json" id="chart-sub">{{ vm.charts.sub_chart | tojson }}</script>
+    <div class="callout" style="font-size:0.72rem; margin-top:0.75rem;">
+      Inside a subscription quota, real marginal spend is zero. The API value displays the equivalent market price if billed on metered consumption.
+    </div>
+  </div>
+</div>

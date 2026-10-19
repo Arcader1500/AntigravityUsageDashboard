@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ filters.theme }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Antigravity // Mission Telemetry</title>
+  <link rel="stylesheet" href="/static/css/telemetry.css">
+  <script src="/static/vendor/htmx.min.js"></script>
+  <script src="/static/vendor/echarts.min.js"></script>
+  <script src="/static/js/app.js" defer></script>
+</head>
+<body>
+  {% include "partials/command_bar.html" %}
+
+  <main id="workspace-canvas" class="workspace">
+    {% if filters.view == 'command' %}
+      {% include "partials/view_command.html" %}
+    {% elif filters.view == 'sessions' %}
+      {% include "partials/view_sessions.html" %}
+    {% elif filters.view == 'economics' %}
+      {% include "partials/view_economics.html" %}
+    {% endif %}
+  </main>
+
+  <div id="drawer-backdrop" class="drawer-backdrop" onclick="closeDrawers()"></div>
+  {% include "partials/sync_drawer.html" %}
+  {% include "partials/session_drawer.html" %}
+  {% include "partials/catalog_drawer.html" %}
+</body>
+</html>

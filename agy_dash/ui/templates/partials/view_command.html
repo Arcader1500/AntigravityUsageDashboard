@@ -1,0 +1,107 @@
+<div class="kpi-strip">
+  {% for kpi in vm.token_kpis %}
+    <div class="kpi-card">
+      <div class="lbl"><span>{{ kpi.icon }} {{ kpi.lbl }}</span></div>
+      <div class="val">{{ kpi.val }}</div>
+      <div class="sub">{{ kpi.sub }}</div>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="kpi-strip">
+  {% for kpi in vm.econ_kpis %}
+    <div class="kpi-card">
+      <div class="lbl"><span>{{ kpi.icon }} {{ kpi.lbl }}</span></div>
+      <div class="val">{{ kpi.val }}</div>
+      <div class="sub">{{ kpi.sub }}</div>
+    </div>
+  {% endfor %}
+</div>
+
+{% if ctx.price_note %}
+  <div class="callout warning">
+    <b>Pricing Notice:</b> {{ ctx.price_note }}
+  </div>
+{% endif %}
+
+<div class="callout">
+  <b>Equivalent API Cost:</b> Modeled consumption bill on a metered public API; real marginal spend inside subscription quota is zero. Subscription spend is reported independently.
+</div>
+
+{% if vm.waste %}
+  <div class="callout">
+    <b>Waste Proxy:</b> <code>{{ vm.waste.cost }}</code> ({{ vm.waste.tokens_at_risk }} tokens at risk) — {{ vm.waste.share_of_calls }} of calls failed across {{ vm.waste.failure_count }} errors. Order-of-magnitude engineering proxy, not an actual invoice.
+  </div>
+{% endif %}
+
+<div class="bento-grid">
+  <div class="bento-panel col-8">
+    <div class="panel-header"><div class="panel-title">Telemetry Burn Trajectory</div></div>
+    <div class="chart-box-tall" data-chart="chart-daily-burn"></div>
+    <script type="application/json" id="chart-daily-burn">{{ vm.charts.daily_burn_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-4">
+    <div class="panel-header"><div class="panel-title">Token Distribution</div></div>
+    <div class="chart-box" data-chart="chart-token-mix"></div>
+    <script type="application/json" id="chart-token-mix">{{ vm.charts.token_mix_chart | tojson }}</script>
+
+    <div style="margin-top:12px;"></div>
+    <div class="chart-box" data-chart="chart-cost-burden"></div>
+    <script type="application/json" id="chart-cost-burden">{{ vm.charts.cost_burden_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-7">
+    <div class="panel-header">
+      <div class="panel-title">Workspace & Project Attribution</div>
+      <span style="font-size:0.7rem; color:var(--text-muted);">From history.jsonl</span>
+    </div>
+    <div class="chart-box" data-chart="chart-workspace"></div>
+    <script type="application/json" id="chart-workspace">{{ vm.charts.workspace_chart | tojson }}</script>
+    <div style="margin-top:12px;"></div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr><th>Project</th><th>Sessions</th><th>Tokens</th><th>Equivalent Cost</th></tr>
+        </thead>
+        <tbody>
+          {% for r in vm.ws_rows %}
+            <tr>
+              <td class="mono cell-truncate" title="{{ r.project }}">{{ r.project }}</td>
+              <td class="mono">{{ r.sessions }}</td>
+              <td class="mono">{{ r.tokens }}</td>
+              <td class="mono">{{ r.cost }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bento-panel col-5">
+    <div class="panel-header"><div class="panel-title">Context Eviction Signals</div></div>
+    <div class="chart-box" data-chart="chart-cache-thrash"></div>
+    <script type="application/json" id="chart-cache-thrash">{{ vm.charts.cache_thrash_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-12">
+    <div class="panel-header"><div class="panel-title">Top Heaviest Active Days</div></div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr><th>Date</th><th>Tokens</th><th>Calls</th><th>Cost</th></tr>
+        </thead>
+        <tbody>
+          {% for d in vm.best_days %}
+            <tr>
+              <td class="mono">{{ d.date }}</td>
+              <td class="mono">{{ d.tokens }}</td>
+              <td class="mono">{{ d.calls }}</td>
+              <td class="mono">{{ d.cost }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

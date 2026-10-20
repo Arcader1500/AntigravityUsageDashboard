@@ -28,62 +28,79 @@
   </div>
 {% endif %}
 
-{% if detail.tools %}
-  <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem;">Tool Invocations</h4>
-  <div class="table-container">
-    <table class="data-table" style="font-size:0.75rem;">
-      <thead><tr><th>Tool</th><th>Calls</th><th>Avg Time</th></tr></thead>
-      <tbody>
-        {% for t in detail.tools %}
-          <tr><td class="mono cell-truncate" title="{{ t.tool }}">{{ t.tool }}</td><td class="mono">{{ t.calls }}</td><td class="mono">{{ t.avg_sec }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-{% endif %}
+<div class="drawer-tab-bar subtab-bar">
+  <button type="button" class="subtab-btn active" onclick="switchDrawerTab(this, 'dtab-overview')">Overview</button>
+  <button type="button" class="subtab-btn" onclick="switchDrawerTab(this, 'dtab-tools')">Tools</button>
+  <button type="button" class="subtab-btn" onclick="switchDrawerTab(this, 'dtab-commands')">Commands</button>
+  <button type="button" class="subtab-btn" onclick="switchDrawerTab(this, 'dtab-failures')">Failures</button>
+</div>
 
-{% if detail.commands %}
-  <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem;">Shell Command Executions</h4>
-  <div class="table-container">
-    <table class="data-table" style="font-size:0.72rem;">
-      <thead><tr><th>Command</th><th>Window</th><th>Exit</th></tr></thead>
-      <tbody>
-        {% for c in detail.commands %}
-          <tr>
-            <td class="mono cell-truncate" title="{{ c.command }}">{{ c.command }}</td>
-            <td class="mono">{{ c.duration }}</td>
-            <td class="mono">{{ c.exit_code }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-{% endif %}
+<div id="dtab-overview" class="drawer-tab-pane subtab-pane active">
+  {% if detail.artifacts %}
+    <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem;">Generated Artifacts</h4>
+    <div class="table-container">
+      <table class="data-table" style="font-size:0.72rem;">
+        <thead><tr><th>Artifact</th><th>Gate</th><th>Summary</th></tr></thead>
+        <tbody>
+          {% for a in detail.artifacts %}
+            <tr><td class="mono cell-truncate" title="{{ a.name }}">{{ a.name }}</td><td class="mono">{{ a.gate }}</td><td class="cell-truncate" title="{{ a.summary }}">{{ a.summary }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:1rem;">(no artifacts)</div>
+  {% endif %}
+</div>
 
-{% if detail.failures %}
-  <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem; color:var(--signal-rose);">Session Failures</h4>
-  <div class="table-container">
-    <table class="data-table" style="font-size:0.72rem;">
-      <thead><tr><th>Date</th><th>Error Text</th></tr></thead>
-      <tbody>
-        {% for f in detail.failures %}
-          <tr><td class="mono">{{ f.date }}</td><td class="mono cell-truncate" style="color:var(--signal-rose);" title="{{ f.text }}">{{ f.text }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-{% endif %}
+<div id="dtab-tools" class="drawer-tab-pane subtab-pane" style="display:none;">
+  {% if detail.tools %}
+    <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem;">Tool Invocations</h4>
+    <div class="table-container">
+      <table class="data-table" style="font-size:0.75rem;">
+        <thead><tr><th>Tool</th><th>Calls</th><th>Avg Time</th></tr></thead>
+        <tbody>
+          {% for t in detail.tools %}
+            <tr><td class="mono cell-truncate" title="{{ t.tool }}">{{ t.tool }}</td><td class="mono">{{ t.calls }}</td><td class="mono">{{ t.avg_sec }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
 
-{% if detail.artifacts %}
-  <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem;">Generated Artifacts</h4>
-  <div class="table-container">
-    <table class="data-table" style="font-size:0.72rem;">
-      <thead><tr><th>Artifact</th><th>Gate</th><th>Summary</th></tr></thead>
-      <tbody>
-        {% for a in detail.artifacts %}
-          <tr><td class="mono cell-truncate" title="{{ a.name }}">{{ a.name }}</td><td class="mono">{{ a.gate }}</td><td class="cell-truncate" title="{{ a.summary }}">{{ a.summary }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-{% endif %}
+<div id="dtab-commands" class="drawer-tab-pane subtab-pane" style="display:none;">
+  {% if detail.commands %}
+    <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem;">Shell Command Executions</h4>
+    <div class="table-container">
+      <table class="data-table" style="font-size:0.72rem;">
+        <thead><tr><th>Command</th><th>Window</th><th>Exit</th></tr></thead>
+        <tbody>
+          {% for c in detail.commands %}
+            <tr>
+              <td class="mono cell-truncate" title="{{ c.command }}">{{ c.command }}</td>
+              <td class="mono">{{ c.duration }}</td>
+              <td class="mono">{{ c.exit_code }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>
+
+<div id="dtab-failures" class="drawer-tab-pane subtab-pane" style="display:none;">
+  {% if detail.failures %}
+    <h4 style="margin:1rem 0 0.5rem 0; font-size:0.8rem; color:var(--signal-rose);">Session Failures</h4>
+    <div class="table-container">
+      <table class="data-table" style="font-size:0.72rem;">
+        <thead><tr><th>Date</th><th>Error Text</th></tr></thead>
+        <tbody>
+          {% for f in detail.failures %}
+            <tr><td class="mono">{{ f.date }}</td><td class="mono cell-truncate" style="color:var(--signal-rose);" title="{{ f.text }}">{{ f.text }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

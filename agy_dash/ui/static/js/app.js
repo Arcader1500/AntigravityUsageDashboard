@@ -111,4 +111,73 @@
       syncActiveTab();
     }
   });
+
+  // 6. Filter deck toggle
+  window.toggleFilterDeck = function() {
+    const deck = document.getElementById('global-filter-deck');
+    if (!deck) return;
+    deck.classList.toggle('open');
+    const toggle = document.getElementById('filter-deck-toggle');
+    if (toggle) {
+      const open = deck.classList.contains('open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      deck.setAttribute('aria-hidden', open ? 'false' : 'true');
+    }
+  };
+
+  // 7. Progressive-disclosure sub-tabs
+  // Scoped to buttons carrying data-subtab-target so the economics switcher
+  // (data-econ-stage) and drawer tabs (.drawer-tab-btn) stay untouched.
+  document.addEventListener('click', (evt) => {
+    const btn = evt.target.closest('.subtab-btn');
+    if (!btn || !btn.dataset.subtabTarget) return;
+
+    const targetId = btn.dataset.subtabTarget;
+    const bar = btn.closest('.subtab-bar') || document;
+    bar.querySelectorAll('.subtab-btn').forEach(b => {
+      const isActive = b === btn;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+
+    const pane = document.getElementById(targetId);
+    document.querySelectorAll('.subtab-pane').forEach(p => {
+      const isActive = p === pane;
+      p.classList.toggle('active', isActive);
+      p.style.display = isActive ? '' : 'none';
+    });
+
+    if (pane && typeof echarts !== 'undefined') {
+      pane.querySelectorAll('[data-chart]').forEach(el => {
+        const chart = echarts.getInstanceByDom(el);
+        if (chart) chart.resize();
+      });
+    }
+  });
+
+  // 8. Drawer tab switching
+  window.switchDrawerTab = function(btn, targetId) {
+    const bar = btn.closest('.drawer-tab-bar');
+    if (bar) bar.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const scope = document.getElementById('session-drawer-content') || document;
+    scope.querySelectorAll('.drawer-tab-pane').forEach(p => {
+      p.classList.toggle('active', p.id === targetId);
+      if (!p.classList.contains('active')) p.style.display = 'none';
+    });
+    const target = scope.querySelector('#' + targetId);
+    if (target) {
+      target.style.display = '';
+      target.classList.add('active');
+    }
+  };
+
+  // 9. Escape closes drawers and the filter deck
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      window.closeDrawers();
+      const deck = document.getElementById('global-filter-deck');
+      if (deck && deck.classList.contains('open')) window.toggleFilterDeck();
+    }
+  });
 })();

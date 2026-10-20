@@ -1,3 +1,10 @@
+<div class="subtab-bar" role="tablist">
+  <button type="button" class="subtab-btn active" data-subtab-target="tab-workload" role="tab" aria-pressed="true">01 // Leaderboard &amp; Directory</button>
+  <button type="button" class="subtab-btn" data-subtab-target="tab-swarm" role="tab" aria-pressed="false">02 // Swarm &amp; Agent Coordination</button>
+  <button type="button" class="subtab-btn" data-subtab-target="tab-reliability" role="tab" aria-pressed="false">03 // Reliability &amp; Diagnostics</button>
+</div>
+
+<div id="tab-workload" class="subtab-pane active" role="tabpanel">
 <!-- ZONE 1: FILTER BAR & KPI STRIP -->
 <div class="bento-panel col-12" style="margin-bottom:1rem; padding:0.6rem 0.85rem; display:flex; justify-content:space-between; align-items:center;">
   <div style="display:flex; gap:0.4rem; align-items:center;">
@@ -17,7 +24,7 @@
 <div class="kpi-strip">
   {% for kpi in vm.session_kpis %}
     <div class="kpi-card">
-      <div class="lbl"><span>{{ kpi.icon }} {{ kpi.lbl }}</span></div>
+      <div class="lbl"><span><svg class="icon"><use href="#{{ kpi.icon }}"/></svg> {{ kpi.lbl }}</span></div>
       <div class="val">{{ kpi.val }}</div>
       <div class="sub">{{ kpi.sub }}</div>
     </div>
@@ -66,45 +73,14 @@
     <div class="chart-box" data-chart="chart-calls-sessions"></div>
     <script type="application/json" id="chart-calls-sessions">{{ vm.charts.calls_vs_sessions_chart | tojson }}</script>
   </div>
-
-  <div class="bento-panel col-6">
-    <div class="panel-header"><div class="panel-title">Active (Busy) vs Idle (Waiting) Hours</div></div>
-    <div class="chart-box" data-chart="chart-time-budget"></div>
-    <script type="application/json" id="chart-time-budget">{{ vm.charts.time_budget_chart | tojson }}</script>
-    <div class="callout" style="font-size:0.7rem;">Gaps capped at 4h: an overnight pause counts as 4h, not 12h.</div>
-  </div>
-
-  <div class="bento-panel col-6">
-    <div class="panel-header"><div class="panel-title">Reasoning Step Ratio (%)</div></div>
-    <div class="chart-box" data-chart="chart-thinking-ratio"></div>
-    <script type="application/json" id="chart-thinking-ratio">{{ vm.charts.thinking_ratio_chart | tojson }}</script>
-  </div>
-
-  <div class="bento-panel col-6">
-    <div class="panel-header"><div class="panel-title">Tool Invocation Mix</div></div>
-    <div class="chart-box" data-chart="chart-tool-mix"></div>
-    <script type="application/json" id="chart-tool-mix">{{ vm.charts.tool_mix_chart | tojson }}</script>
-  </div>
-
-  <div class="bento-panel col-6">
-    <div class="panel-header"><div class="panel-title">Tool Execution Latencies</div></div>
-    <div class="table-container">
-      <table class="data-table">
-        <thead><tr><th>Tool</th><th>Calls</th><th>P50 Latency</th><th>P90 Latency</th><th>Total Time</th></tr></thead>
-        <tbody>
-          {% for r in vm.turn_rows %}
-            <tr><td class="mono cell-truncate" title="{{ r.tool }}">{{ r.tool }}</td><td class="mono">{{ r.calls }}</td><td class="mono">{{ r.p50 }}</td><td class="mono">{{ r.p90 }}</td><td class="mono">{{ r.total_min }}</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
+</div>
 </div>
 
+<div id="tab-swarm" class="subtab-pane" role="tabpanel" style="display:none">
 <div class="kpi-strip" style="margin-top:1rem;">
   {% for kpi in vm.swarm_kpis %}
     <div class="kpi-card">
-      <div class="lbl">{{ kpi.icon }} {{ kpi.lbl }}</div>
+      <div class="lbl"><span><svg class="icon"><use href="#{{ kpi.icon }}"/></svg> {{ kpi.lbl }}</span></div>
       <div class="val">{{ kpi.val }}</div>
     </div>
   {% endfor %}
@@ -138,11 +114,48 @@
   </div>
 </div>
 
+<div class="bento-grid" style="margin-top:1rem;">
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Active (Busy) vs Idle (Waiting) Hours</div></div>
+    <div class="chart-box" data-chart="chart-time-budget"></div>
+    <script type="application/json" id="chart-time-budget">{{ vm.charts.time_budget_chart | tojson }}</script>
+    <div class="callout" style="font-size:0.7rem;">Gaps capped at 4h: an overnight pause counts as 4h, not 12h.</div>
+  </div>
+
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Reasoning Step Ratio (%)</div></div>
+    <div class="chart-box" data-chart="chart-thinking-ratio"></div>
+    <script type="application/json" id="chart-thinking-ratio">{{ vm.charts.thinking_ratio_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Tool Invocation Mix</div></div>
+    <div class="chart-box" data-chart="chart-tool-mix"></div>
+    <script type="application/json" id="chart-tool-mix">{{ vm.charts.tool_mix_chart | tojson }}</script>
+  </div>
+
+  <div class="bento-panel col-6">
+    <div class="panel-header"><div class="panel-title">Tool Execution Latencies</div></div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>Tool</th><th>Calls</th><th>P50 Latency</th><th>P90 Latency</th><th>Total Time</th></tr></thead>
+        <tbody>
+          {% for r in vm.turn_rows %}
+            <tr><td class="mono cell-truncate" title="{{ r.tool }}">{{ r.tool }}</td><td class="mono">{{ r.calls }}</td><td class="mono">{{ r.p50 }}</td><td class="mono">{{ r.p90 }}</td><td class="mono">{{ r.total_min }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="tab-reliability" class="subtab-pane" role="tabpanel" style="display:none">
 <!-- ZONE 3: FRICTION & RELIABILITY -->
 <div class="kpi-strip" style="margin-top:1rem;">
   {% for kpi in vm.context_kpis %}
     <div class="kpi-card">
-      <div class="lbl">{{ kpi.icon }} {{ kpi.lbl }}</div>
+      <div class="lbl"><span><svg class="icon"><use href="#{{ kpi.icon }}"/></svg> {{ kpi.lbl }}</span></div>
       <div class="val">{{ kpi.val }}</div>
     </div>
   {% endfor %}
@@ -199,4 +212,5 @@
 </div>
 <div class="callout" style="margin-top:1rem;">
   <b>Execution Window Disclaimer:</b> CLI duration stamps reflect the full execution window including process queueing and waiting, not pure CPU stopwatch time.
+</div>
 </div>

@@ -211,3 +211,12 @@ def test_view_models_use_svg_icon_identifiers(usage, data):
     sess_vm = views.build_sessions_view(ctx, data)
     for kpi in sess_vm["session_kpis"] + sess_vm["swarm_kpis"] + sess_vm["context_kpis"]:
         assert kpi["icon"].startswith("icon-"), f"Session KPI icon is not an SVG symbol ID: {kpi['icon']}"
+
+def test_command_view_hero_matrix_structure(client):
+    from fastapi.testclient import TestClient
+    res = client.get("/?view=command")
+    assert res.status_code == 200
+    assert 'class="hero-kpi-matrix"' in res.text
+    assert '<svg class="icon"><use href="#icon-zap"' in res.text
+    assert 'chart-daily-burn' in res.text
+    assert 'chart-token-mix' in res.text

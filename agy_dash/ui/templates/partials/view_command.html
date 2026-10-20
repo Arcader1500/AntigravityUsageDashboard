@@ -1,36 +1,57 @@
-<div class="kpi-strip">
-  {% for kpi in vm.token_kpis %}
-    <div class="kpi-card">
-      <div class="lbl"><span>{{ kpi.icon }} {{ kpi.lbl }}</span></div>
-      <div class="val">{{ kpi.val }}</div>
-      <div class="sub">{{ kpi.sub }}</div>
-    </div>
-  {% endfor %}
+<div class="panel-header">
+  <div class="panel-title">Command Overview</div>
+  {% if vm.waste %}
+    <span class="info-chip" title="{{ vm.waste.cost }} · {{ vm.waste.tokens_at_risk }} tokens at risk · {{ vm.waste.share_of_calls }} of calls failed across {{ vm.waste.failure_count }} errors. Order-of-magnitude engineering proxy, not an actual invoice." onclick="this.remove()">Waste Proxy · {{ vm.waste.cost }} ✕</span>
+  {% endif %}
 </div>
 
-<div class="kpi-strip">
-  {% for kpi in vm.econ_kpis %}
-    <div class="kpi-card">
-      <div class="lbl"><span>{{ kpi.icon }} {{ kpi.lbl }}</span></div>
-      <div class="val">{{ kpi.val }}</div>
-      <div class="sub">{{ kpi.sub }}</div>
+<div class="hero-kpi-matrix">
+  <div class="kpi-card hero-kpi">
+    <div class="lbl">
+      <svg class="icon"><use href="#icon-zap"/></svg>
+      <span>TOTAL INGESTION</span>
     </div>
-  {% endfor %}
+    <div class="val">{{ ctx.overview.totals.total | fmt_tokens }}</div>
+    <div class="sub">{{ ctx.overview.totals.active_days }} active days</div>
+    <div class="sub">{{ ctx.overview.totals.fresh_in | fmt_tokens }} fresh / {{ ctx.overview.totals.cached | fmt_tokens }} cached</div>
+  </div>
+
+  <div class="kpi-card hero-kpi">
+    <div class="lbl">
+      <svg class="icon"><use href="#icon-coins"/></svg>
+      <span title="{% if ctx.price_note %}{{ ctx.price_note }}{% else %}Modeled consumption bill on a metered public API; real marginal spend inside subscription quota is zero. Subscription spend is reported independently.{% endif %}">EQUIVALENT API COST</span>
+      <span class="badge-pill mono">{{ ctx.currency }}</span>
+      <span class="info-chip" title="Modeled consumption bill on a metered public API; real marginal spend inside subscription quota is zero. Subscription spend is reported independently.">ⓘ</span>
+    </div>
+    <div class="val">{{ ctx.overview.api_cost_usd | fmt_money(ctx.currency) }}</div>
+    <div class="sub">{{ ctx.overview.model_name }} catalog</div>
+  </div>
+
+  <div class="kpi-card hero-kpi">
+    <div class="lbl">
+      <svg class="icon"><use href="#icon-shield-check"/></svg>
+      <span>CACHE EFFICIENCY</span>
+    </div>
+    <div class="val">{{ ctx.overview.totals.cache_hit_rate | fmt_pct }}</div>
+    <div class="sub">{{ ctx.overview.totals.cached | fmt_tokens }} cache reads</div>
+  </div>
+
+  <div class="kpi-card hero-kpi">
+    <div class="lbl">
+      <svg class="icon"><use href="#icon-cpu"/></svg>
+      <span>SYSTEM ACTIVITY</span>
+    </div>
+    <div class="val">{{ ctx.overview.totals.active_days }}</div>
+    <div class="sub">{{ ctx.sessions | length }} sessions · {{ ctx.overview.totals.calls | fmt_tokens }} calls</div>
+    {% if vm.waste %}
+      <div class="sub">{{ vm.waste.tokens_at_risk }} tokens at risk · {{ vm.waste.share_of_calls }} failed calls</div>
+    {% endif %}
+  </div>
 </div>
 
 {% if ctx.price_note %}
   <div class="callout warning">
     <b>Pricing Notice:</b> {{ ctx.price_note }}
-  </div>
-{% endif %}
-
-<div class="callout">
-  <b>Equivalent API Cost:</b> Modeled consumption bill on a metered public API; real marginal spend inside subscription quota is zero. Subscription spend is reported independently.
-</div>
-
-{% if vm.waste %}
-  <div class="callout">
-    <b>Waste Proxy:</b> <code>{{ vm.waste.cost }}</code> ({{ vm.waste.tokens_at_risk }} tokens at risk) — {{ vm.waste.share_of_calls }} of calls failed across {{ vm.waste.failure_count }} errors. Order-of-magnitude engineering proxy, not an actual invoice.
   </div>
 {% endif %}
 
@@ -82,9 +103,8 @@
     <div class="panel-header"><div class="panel-title">Context Eviction Signals</div></div>
     <div class="chart-box" data-chart="chart-cache-thrash"></div>
     <script type="application/json" id="chart-cache-thrash">{{ vm.charts.cache_thrash_chart | tojson }}</script>
-  </div>
 
-  <div class="bento-panel col-12">
+    <div style="margin-top:12px;"></div>
     <div class="panel-header"><div class="panel-title">Top Heaviest Active Days</div></div>
     <div class="table-container">
       <table class="data-table">

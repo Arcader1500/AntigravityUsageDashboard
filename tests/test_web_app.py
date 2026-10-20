@@ -1,30 +1,7 @@
 import io
 import pytest
-from fastapi.testclient import TestClient
-import app as app_module
-from agy_dash import config as cfgmod
-from agy_dash import pricing
 from agy_dash.source import SourceError
 from agy_dash.ui import state
-
-
-@pytest.fixture
-def client(usage, rich_brain, monkeypatch, tmp_path):
-    cfg = cfgmod.Config(data={
-        **cfgmod.DEFAULTS,
-        "brain_root": str(rich_brain),
-        "db_path": str(tmp_path / "snap.db"),
-        "log_dir": str(tmp_path / "logs"),
-        "reporting_currency": "INR",
-        "usd_to_inr": 88.0,
-        "default_model": "claude-sonnet",
-        "subscription": {"amount": 2000.0, "currency": "INR"},
-    })
-    monkeypatch.setattr(cfgmod, "get_config", lambda reload=False: cfg)
-    monkeypatch.setattr(state, "load_usage", lambda _: usage)
-    monkeypatch.setattr(state, "load_catalog", lambda: pricing.default_catalog())
-    state.clear_all_caches()
-    return TestClient(app_module.app)
 
 
 def test_index_renders_html_shell(client):
@@ -32,6 +9,15 @@ def test_index_renders_html_shell(client):
     assert res.status_code == 200
     assert "ANTIGRAVITY" in res.text
     assert "01 // COMMAND" in res.text
+
+
+def test_command_bar_unified_structure(client):
+    res = client.get("/")
+    assert res.status_code == 200
+    assert 'class="command-bar-unified"' in res.text
+    assert 'id="filter-deck-toggle"' in res.text
+    assert '<svg class="icon"><use href="#icon-filter"' in res.text
+    assert 'onchange="this.form.requestSubmit()"' not in res.text
 
 
 def test_switch_workspace_views(client):

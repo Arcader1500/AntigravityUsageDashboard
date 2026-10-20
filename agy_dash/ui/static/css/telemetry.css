@@ -2,42 +2,45 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap');
 
 :root {
-  --bg-core: #090A0F;
-  --panel-bg: rgba(16, 18, 26, 0.90);
-  --panel-solid: #10121A;
-  --panel-alt: #161922;
-  --border-subtle: #1E2230;
+  --bg-core: #0B0F19;
+  --panel-bg: #111827;
+  --panel-solid: #151B2A;
+  --panel-alt: #1E293B;
+  --border-subtle: #1F2937;
   --border-specular: rgba(255, 255, 255, 0.08);
   --text-main: #F1F5F9;
   --text-bright: #FFFFFF;
   --text-muted: #94A3B8;
-  --brand-cyan: #38BDF8;
-  --brand-accent: #38BDF8;
+  /* Semantic signal palette. Legacy --brand-* aliases keep older selectors intact. */
+  --signal-sky: #38BDF8;
   --signal-emerald: #10B981;
   --signal-amber: #F59E0B;
-  --signal-rose: #F43F5E;
   --signal-violet: #A78BFA;
+  --signal-rose: #F43F5E;
+  --brand-cyan: var(--signal-sky);
+  --brand-accent: var(--signal-sky);
   --font-display: 'Syne', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
 [data-theme="light"] {
-  --bg-core: #F6F7F9;
-  --panel-bg: rgba(255, 255, 255, 0.94);
+  --bg-core: #F8FAFC;
+  --panel-bg: #FFFFFF;
   --panel-solid: #FFFFFF;
-  --panel-alt: #F1F4F8;
+  --panel-alt: #F1F5F9;
   --border-subtle: #E2E8F0;
   --border-specular: rgba(0, 0, 0, 0.06);
   --text-main: #0F172A;
   --text-bright: #020617;
   --text-muted: #64748B;
-  --brand-cyan: #0284C7;
-  --brand-accent: #0284C7;
+  --signal-sky: #0284C7;
   --signal-emerald: #059669;
   --signal-amber: #D97706;
   --signal-rose: #E11D48;
   --signal-violet: #7C3AED;
+  --brand-cyan: #0284C7;
+  --brand-accent: #0284C7;
 }
 
 *, *::before, *::after {
@@ -61,7 +64,29 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.mono { font-family: var(--font-mono); }
+.mono,
+.data-table td.mono,
+.kpi-card .val,
+.pill-val {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Vector icon sprite sizing (24x24 stroke-based symbols). */
+svg.icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+svg.icon use {
+  stroke: currentColor;
+}
+
+.icon {
+  display: inline-block;
+  vertical-align: text-top;
+}
 
 /* ==========================================================================
    Command Bar & Flight Deck Navigation
@@ -348,6 +373,56 @@ body {
   color: var(--text-muted);
 }
 
+/* Progressive-disclosure sub-tab navigation */
+.subtab-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--panel-solid);
+}
+
+.subtab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  padding: 0.45rem 0.9rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.subtab-btn:hover {
+  color: var(--text-main);
+}
+
+.subtab-btn.active {
+  color: var(--text-bright);
+  border-bottom-color: var(--signal-sky);
+}
+
+.subtab-pane { display: none; }
+.subtab-pane.active { display: block; }
+
+/* Collapsible filter deck panels */
+.filter-collapsible { display: none; }
+.filter-collapsible.open { display: flex; }
+
+.filter-deck-panel { display: none; }
+.filter-deck-panel.open {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  padding: 0.4rem 1.25rem;
+  background: rgba(0, 0, 0, 0.12);
+  border-top: 1px solid var(--border-specular);
+}
+
 /* ==========================================================================
    Workspace Layout & Bento Grid
    ========================================================================== */
@@ -372,10 +447,20 @@ body {
   background: var(--panel-bg);
   border: 1px solid var(--border-specular);
   border-radius: 6px;
-  padding: 0.85rem 1rem;
+  padding: 0.75rem 1rem;
   min-width: 0;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.kpi-card:hover {
+  border-color: var(--border-subtle);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="light"] .kpi-card:hover {
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
 }
 
 .kpi-card .lbl {
@@ -504,6 +589,10 @@ body {
   min-width: 0;
   position: relative;
 }
+
+/* Economics stage switcher panes */
+.econ-stage-pane { display: none; }
+.econ-stage-pane.active { display: block; }
 
 /* ==========================================================================
    Data Tables & Cell Truncation

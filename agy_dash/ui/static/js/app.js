@@ -127,7 +127,8 @@
 
   // 7. Progressive-disclosure sub-tabs
   // Scoped to buttons carrying data-subtab-target so the economics switcher
-  // (data-econ-stage) and drawer tabs (.drawer-tab-btn) stay untouched.
+  // (data-econ-stage) and drawer tabs (.drawer-tab-bar .subtab-btn without a
+  // data-subtab-target) stay untouched.
   document.addEventListener('click', (evt) => {
     const btn = evt.target.closest('.subtab-btn');
     if (!btn || !btn.dataset.subtabTarget) return;

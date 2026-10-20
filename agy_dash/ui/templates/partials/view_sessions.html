@@ -1,3 +1,4 @@
+{% set subtab = subtab if subtab is defined else 'workload' %}
 <div class="subtab-bar" role="tablist">
   <button type="button" class="subtab-btn{% if subtab not in ('swarm', 'reliability') %} active{% endif %}" data-subtab-target="tab-workload" role="tab" aria-pressed="{% if subtab not in ('swarm', 'reliability') %}true{% else %}false{% endif %}">01 // Leaderboard &amp; Directory</button>
   <button type="button" class="subtab-btn{% if subtab == 'swarm' %} active{% endif %}" data-subtab-target="tab-swarm" role="tab" aria-pressed="{% if subtab == 'swarm' %}true{% else %}false{% endif %}">02 // Swarm &amp; Agent Coordination</button>

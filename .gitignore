@@ -8,3 +8,5 @@ config/config.json
 config/pricing.json
 graphify-out/
 .python-version
+
+.code-review-graph/

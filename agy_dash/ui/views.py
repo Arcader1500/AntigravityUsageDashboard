@@ -21,18 +21,18 @@ def build_command_view(ctx: common.Ctx, deep_data: deep.DeepData | None) -> dict
     curr = ctx.currency
 
     token_kpis = [
-        {"lbl": "TOTAL INGESTION", "val": common.fmt_tokens(t.total), "sub": f"{t.active_days} active days", "icon": "⚡", "badge": "ALL"},
-        {"lbl": "FRESH INPUT", "val": common.fmt_tokens(t.fresh_in), "sub": f"{common.fmt_pct(metrics.safe_div(t.fresh_in, t.total))} fresh", "icon": "📥", "badge": "UNCACHED"},
-        {"lbl": "CACHED INPUT", "val": common.fmt_tokens(t.cached), "sub": f"{common.fmt_pct(t.cache_hit_rate)} efficiency", "icon": "⚡", "badge": "REUSED"},
-        {"lbl": "OUTPUT & THINKING", "val": common.fmt_tokens(t.output), "sub": "reasoning tokens included", "icon": "📤", "badge": "GENERATED"},
+        {"lbl": "TOTAL INGESTION", "val": common.fmt_tokens(t.total), "sub": f"{t.active_days} active days", "icon": "icon-zap", "badge": "ALL"},
+        {"lbl": "FRESH INPUT", "val": common.fmt_tokens(t.fresh_in), "sub": f"{common.fmt_pct(metrics.safe_div(t.fresh_in, t.total))} fresh", "icon": "icon-inbox", "badge": "UNCACHED"},
+        {"lbl": "CACHED INPUT", "val": common.fmt_tokens(t.cached), "sub": f"{common.fmt_pct(t.cache_hit_rate)} efficiency", "icon": "icon-zap", "badge": "REUSED"},
+        {"lbl": "OUTPUT & THINKING", "val": common.fmt_tokens(t.output), "sub": "reasoning tokens included", "icon": "icon-cpu", "badge": "GENERATED"},
     ]
 
     sub_spend = o.subscription_spend
     econ_kpis = [
-        {"lbl": "EQUIVALENT API COST", "val": common.fmt_money(ctx.to_currency(o.api_cost_usd), curr), "sub": f"{o.model_name} catalog", "icon": "💵", "badge": "METERED"},
-        {"lbl": "SUBSCRIPTION SPEND", "val": common.fmt_money(sub_spend, curr), "sub": "fixed periodic spend", "icon": "💳", "badge": "FIXED"},
-        {"lbl": "BLENDED EFFICIENCY", "val": common.fmt_rate(ctx.to_currency(o.blended_rate_usd_per_mtok), curr), "sub": f"{common.fmt_tokens(o.tokens_per_currency_spent)} tok/{curr}", "icon": "📊", "badge": "RATE"},
-        {"lbl": "CACHE SAVINGS", "val": common.fmt_money(ctx.to_currency(getattr(metrics, "cache_savings_usd", _cache_savings_usd)(t.fresh_in, t.cached, ctx.prices)), curr), "sub": "saved via reuse", "icon": "🛡️", "badge": "SAVED"},
+        {"lbl": "EQUIVALENT API COST", "val": common.fmt_money(ctx.to_currency(o.api_cost_usd), curr), "sub": f"{o.model_name} catalog", "icon": "icon-coins", "badge": "METERED"},
+        {"lbl": "SUBSCRIPTION SPEND", "val": common.fmt_money(sub_spend, curr), "sub": "fixed periodic spend", "icon": "icon-credit-card", "badge": "FIXED"},
+        {"lbl": "BLENDED EFFICIENCY", "val": common.fmt_rate(ctx.to_currency(o.blended_rate_usd_per_mtok), curr), "sub": f"{common.fmt_tokens(o.tokens_per_currency_spent)} tok/{curr}", "icon": "icon-chart-bar", "badge": "RATE"},
+        {"lbl": "CACHE SAVINGS", "val": common.fmt_money(ctx.to_currency(getattr(metrics, "cache_savings_usd", _cache_savings_usd)(t.fresh_in, t.cached, ctx.prices)), curr), "sub": "saved via reuse", "icon": "icon-shield-check", "badge": "SAVED"},
     ]
 
     sessions = ctx.usage.sessions if ctx.usage else ctx.sessions
@@ -116,10 +116,10 @@ def build_sessions_view(
     )
 
     session_kpis = [
-        {"lbl": "FILTERED SESSIONS", "val": f"{len(sessions):,}", "sub": f"{main_count} main · {sub_count} subagents", "icon": "🧭", "badge": "COUNT"},
-        {"lbl": "FILTERED VOLUME", "val": common.fmt_tokens(total_tok), "sub": f"{common.fmt_pct(metrics.safe_div(total_tok, all_tok))} of window", "icon": "⚡", "badge": "VOLUME"},
-        {"lbl": "AVG WORKLOAD / SESSION", "val": common.fmt_tokens(total_tok / max(1, len(sessions))), "sub": "mean tokens", "icon": "📊", "badge": "AVERAGE"},
-        {"lbl": "SUBAGENT TOKEN SHARE", "val": common.fmt_pct(sub_share), "sub": "autonomous execution share", "icon": "🤖", "badge": "SHARE"},
+        {"lbl": "FILTERED SESSIONS", "val": f"{len(sessions):,}", "sub": f"{main_count} main · {sub_count} subagents", "icon": "icon-compass", "badge": "COUNT"},
+        {"lbl": "FILTERED VOLUME", "val": common.fmt_tokens(total_tok), "sub": f"{common.fmt_pct(metrics.safe_div(total_tok, all_tok))} of window", "icon": "icon-zap", "badge": "VOLUME"},
+        {"lbl": "AVG WORKLOAD / SESSION", "val": common.fmt_tokens(total_tok / max(1, len(sessions))), "sub": "mean tokens", "icon": "icon-chart-bar", "badge": "AVERAGE"},
+        {"lbl": "SUBAGENT TOKEN SHARE", "val": common.fmt_pct(sub_share), "sub": "autonomous execution share", "icon": "icon-bot", "badge": "SHARE"},
     ]
 
     session_rows = []
@@ -198,19 +198,19 @@ def build_sessions_view(
 
     gaps_df = deep.gaps_daily(deep_data.gaps) if deep_data else pd.DataFrame()
     swarm_kpis = [
-        {"lbl": "BACKGROUND LOGS", "val": f"{counters.get('task_logs', 0):,}", "icon": "📋"},
-        {"lbl": "SCHEDULE CALLS", "val": f"{counters.get('schedule_calls', 0):,}", "icon": "⏰"},
-        {"lbl": "MANAGE_TASK", "val": f"{counters.get('tool:manage_task', 0):,}", "icon": "🛠️"},
-        {"lbl": "MANAGE_SUBAGENTS", "val": f"{counters.get('tool:manage_subagents', 0):,}", "icon": "👥"},
+        {"lbl": "BACKGROUND LOGS", "val": f"{counters.get('task_logs', 0):,}", "icon": "icon-clipboard"},
+        {"lbl": "SCHEDULE CALLS", "val": f"{counters.get('schedule_calls', 0):,}", "icon": "icon-clock"},
+        {"lbl": "MANAGE_TASK", "val": f"{counters.get('tool:manage_task', 0):,}", "icon": "icon-wrench"},
+        {"lbl": "MANAGE_SUBAGENTS", "val": f"{counters.get('tool:manage_subagents', 0):,}", "icon": "icon-users"},
     ]
 
     high_ctx = int((sessions["total"] > 100_000).sum()) if not sessions.empty else 0
     max_ctx = int(sessions["total"].max()) if not sessions.empty else 0
     avg_ctx = int(sessions["total"].mean()) if not sessions.empty else 0
     context_kpis = [
-        {"lbl": "HIGH CONTEXT SESSIONS (>100K)", "val": f"{high_ctx:,}", "icon": "⚠️"},
-        {"lbl": "PEAK CONTEXT RECORD", "val": common.fmt_tokens(max_ctx), "icon": "🏔️"},
-        {"lbl": "AVG CONTEXT WORKLOAD", "val": common.fmt_tokens(avg_ctx), "icon": "📐"},
+        {"lbl": "HIGH CONTEXT SESSIONS (>100K)", "val": f"{high_ctx:,}", "icon": "icon-alert-triangle"},
+        {"lbl": "PEAK CONTEXT RECORD", "val": common.fmt_tokens(max_ctx), "icon": "icon-mountain"},
+        {"lbl": "AVG CONTEXT WORKLOAD", "val": common.fmt_tokens(avg_ctx), "icon": "icon-ruler"},
     ]
 
     chart_payloads = {
@@ -346,10 +346,10 @@ def build_economics_view(
 
     unit_fmt = (lambda v: common.fmt_money(v, ctx.currency)) if unit is None else common.fmt_tokens
     fc_kpis = [
-        {"lbl": "OBSERVED DAILY MEAN", "val": unit_fmt(float(np.mean(values))) if len(values) else "0", "sub": f"{len(values)} active days measured", "icon": "📊", "badge": "MEASURED"},
-        {"lbl": "FORECAST LOW (P10)", "val": unit_fmt(fc.cumulative_low), "sub": "conservative floor", "icon": "📉", "badge": "P10"},
-        {"lbl": "FORECAST MEDIAN (P50)", "val": unit_fmt(fc.cumulative_median), "sub": "central projection", "icon": "🎯", "badge": "P50"},
-        {"lbl": "FORECAST HIGH (P90)", "val": unit_fmt(fc.cumulative_high), "sub": "tail surge scenario", "icon": "📈", "badge": "P90"},
+        {"lbl": "OBSERVED DAILY MEAN", "val": unit_fmt(float(np.mean(values))) if len(values) else "0", "sub": f"{len(values)} active days measured", "icon": "icon-chart-bar", "badge": "MEASURED"},
+        {"lbl": "FORECAST LOW (P10)", "val": unit_fmt(fc.cumulative_low), "sub": "conservative floor", "icon": "icon-trending-down", "badge": "P10"},
+        {"lbl": "FORECAST MEDIAN (P50)", "val": unit_fmt(fc.cumulative_median), "sub": "central projection", "icon": "icon-target", "badge": "P50"},
+        {"lbl": "FORECAST HIGH (P90)", "val": unit_fmt(fc.cumulative_high), "sub": "tail surge scenario", "icon": "icon-trending-up", "badge": "P90"},
     ]
 
     schedule_rows = []

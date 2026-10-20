@@ -200,3 +200,14 @@ def test_build_sync_drawer(usage, tmp_path):
     sync_bare = views.build_sync_drawer(ctx_bare)
     assert sync_bare["db_counts"]["session_facts"] == 0
     assert sync_bare["runner_state"] is None
+
+
+def test_view_models_use_svg_icon_identifiers(usage, data):
+    ctx = _make_ctx(usage)
+    cmd_vm = views.build_command_view(ctx, data)
+    for kpi in cmd_vm["token_kpis"] + cmd_vm["econ_kpis"]:
+        assert kpi["icon"].startswith("icon-"), f"KPI icon is not an SVG symbol ID: {kpi['icon']}"
+
+    sess_vm = views.build_sessions_view(ctx, data)
+    for kpi in sess_vm["session_kpis"] + sess_vm["swarm_kpis"] + sess_vm["context_kpis"]:
+        assert kpi["icon"].startswith("icon-"), f"Session KPI icon is not an SVG symbol ID: {kpi['icon']}"

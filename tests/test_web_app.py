@@ -129,3 +129,11 @@ def test_pricing_error_handling(client, monkeypatch):
     res = client.get("/")
     assert res.status_code == 400
     assert "Telemetry Fault Encountered" in res.text
+
+
+def test_economics_view_segmented_switcher(client):
+    res = client.get("/?view=economics")
+    assert res.status_code == 200
+    assert 'class="economics-switcher subtab-bar"' in res.text
+    assert 'data-econ-stage="forecast"' in res.text
+    assert 'data-econ-stage="simulator"' in res.text

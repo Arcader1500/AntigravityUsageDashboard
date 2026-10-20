@@ -1,7 +1,20 @@
-<div id="forecast-stage-container">
-  {% include "partials/forecast_stage.html" %}
+<div class="economics-switcher subtab-bar" role="tablist">
+  <button type="button" class="subtab-btn active" data-econ-stage="forecast" onclick="switchEconStage('forecast')">
+    01 // Forecasting Engine
+  </button>
+  <button type="button" class="subtab-btn" data-econ-stage="simulator" onclick="switchEconStage('simulator')">
+    02 // What-If Simulator &amp; Model Lab
+  </button>
 </div>
 
-<div id="lab-stage-container" style="margin-top:1.5rem;">
-  {% include "partials/lab_stage.html" %}
+<div id="forecast-stage-pane" class="econ-stage-pane active">
+  <div id="forecast-stage-container">
+    {% include "partials/forecast_stage.html" %}
+  </div>
+</div>
+
+<div id="lab-stage-pane" class="econ-stage-pane" style="display:none;">
+  <div id="lab-stage-container">
+    {% include "partials/lab_stage.html" %}
+  </div>
 </div>

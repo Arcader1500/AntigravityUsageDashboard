@@ -1,7 +1,7 @@
 <div class="panel-header">
   <div class="panel-title">Command Overview</div>
   {% if vm.waste %}
-    <span class="info-chip" title="{{ vm.waste.cost }} · {{ vm.waste.tokens_at_risk }} tokens at risk · {{ vm.waste.share_of_calls }} of calls failed across {{ vm.waste.failure_count }} errors. Order-of-magnitude engineering proxy, not an actual invoice." onclick="this.remove()">Waste Proxy · {{ vm.waste.cost }} ✕</span>
+    <span class="info-chip" title="{{ vm.waste.cost }} · {{ vm.waste.tokens_at_risk }} tokens at risk · {{ vm.waste.share_of_calls }} of calls failed across {{ vm.waste.failure_count }} errors. Order-of-magnitude engineering proxy, not an actual invoice." onclick="this.remove()">Waste Proxy · {{ vm.waste.cost }} <svg class="icon"><use href="#icon-close"/></svg></span>
   {% endif %}
 </div>
 

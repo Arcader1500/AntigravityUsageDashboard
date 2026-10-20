@@ -151,3 +151,28 @@ def test_subtab_query_parameters(client):
     res_econ = client.get("/?view=economics&stage=simulator")
     assert res_econ.status_code == 200
     assert 'id="lab-stage-pane" class="econ-stage-pane active"' in res_econ.text
+
+
+def test_session_detail_tabbed_structure(client, usage):
+    sid = usage.sessions["session_id"].iloc[0]
+    res = client.get(f"/partials/session-detail/{sid}")
+    assert res.status_code == 200
+    assert 'class="drawer-tab-bar subtab-bar"' in res.text
+
+
+def test_templates_free_of_structural_emoji():
+    from pathlib import Path
+    emojis = ["⚡", "📥", "📤", "💰", "🤖", "📐", "🌓", "🔄", "💵", "💳", "🧭", "📋", "⏰", "🛠", "👥", "⚠", "🏔", "🎯", "📈", "📉", "✕", "✓"]
+    for p in Path("agy_dash/ui/templates").rglob("*.html"):
+        text = p.read_text(encoding="utf-8")
+        for emo in emojis:
+            assert emo not in text, f"structural emoji {emo!r} found in {p.name}"
+
+
+def test_sessions_client_runtime_wiring():
+    from pathlib import Path
+    js = Path("agy_dash/ui/static/js/app.js").read_text(encoding="utf-8")
+    assert "toggleFilterDeck" in js
+    assert "switchEconStage" in js
+    assert "switchDrawerTab" in js
+    assert "Escape" in js

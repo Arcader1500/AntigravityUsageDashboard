@@ -18,7 +18,7 @@
   <div style="display:flex; gap:0.5rem; align-items:center;">
     <input type="search" name="search" placeholder="Search sessions..." class="filter-input" style="width:14rem;"
            hx-get="/?view=sessions" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form" hx-trigger="keyup changed delay:300ms">
-    <button type="button" class="btn" hx-post="/api/refresh?scope=deep" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form" hx-headers='{"HX-Request":"true"}'>🔄 Rescan Deep</button>
+    <button type="button" class="btn" hx-post="/api/refresh?scope=deep" hx-select="#workspace-canvas" hx-target="#workspace-canvas" hx-swap="outerHTML" hx-include="#global-filter-form" hx-headers='{"HX-Request":"true"}'><svg class="icon"><use href="#icon-refresh"/></svg><span>Rescan Deep</span></button>
   </div>
 </div>
 

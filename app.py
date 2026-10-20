@@ -1,182 +1,227 @@
-"""Antigravity usage analytics dashboard - Streamlit entry point.
+"""Antigravity Telemetry Control — FastAPI Entry Point.
 
-Run:  streamlit run app.py     (or use run.ps1 / run.bat)
-
-The sidebar owns navigation, global filters and pricing. Each page module
-renders into a shared Ctx so every tab uses identical numbers.
+Run: python app.py (or run.ps1 / uvicorn app:app --port 8501)
 """
 
 from __future__ import annotations
 
-import os
+import io
 from pathlib import Path
+from typing import Annotated
 
 import pandas as pd
-import streamlit as st
+import uvicorn
+from fastapi import FastAPI, Form, Header, HTTPException, Query, Request, Response
+from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from agy_dash import config as cfgmod
-from agy_dash import metrics, pricing, source
-from agy_dash.jobs import JobRunner
-from agy_dash.ui import common
-from agy_dash.ui import data_jobs, deep_signals, explorer, forecast, lab, overview
+from agy_dash import snapshots
+from agy_dash.source import SourceError
+from agy_dash.ui import common, state, views
 
-PAGES = {
-    "Overview": overview.render,
-    "Usage Explorer": explorer.render,
-    "Model Cost Lab": lab.render,
-    "Forecast": forecast.render,
-    "Deep Signals": deep_signals.render,
-    "Data & Jobs": data_jobs.render,
-}
+APP_DIR = Path(__file__).resolve().parent
+TEMPLATES_DIR = APP_DIR / "agy_dash" / "ui" / "templates"
+STATIC_DIR = APP_DIR / "agy_dash" / "ui" / "static"
 
-st.set_page_config(page_title="Antigravity Usage", page_icon="🛰️", layout="wide")
-CONFIG = cfgmod.get_config()
-LOG = cfgmod.setup_logging(CONFIG)
+app = FastAPI(title="Antigravity Telemetry Control", docs_url=None, redoc_url=None)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
-
-@st.cache_data(ttl=30, show_spinner=False)
-def load_usage(brain_root: str, extractor: str) -> source.UsageData:
-    """Scan is ~1.5 s; cache for 30 s so UI interactions stay instant."""
-    return source.scan_usage(Path(brain_root), Path(extractor))
+# Register template filters
+templates.env.filters["fmt_tokens"] = common.fmt_tokens
+templates.env.filters["fmt_money"] = common.fmt_money
+templates.env.filters["fmt_pct"] = common.fmt_pct
 
 
-@st.cache_data(ttl=300, show_spinner=False)
-def load_catalog() -> list:
-    return pricing.load_catalog()
+def _check_csrf(hx_request: str | None) -> None:
+    if not hx_request:
+        raise HTTPException(status_code=400, detail="Missing required HX-Request header")
 
 
-def get_runner() -> JobRunner:
-    if "runner" not in st.session_state:
-        st.session_state["runner"] = JobRunner(
-            CONFIG.extractor_script, CONFIG.python_executable,
-            table=dict(os.environ), log_dir=CONFIG.log_dir, timeout_seconds=CONFIG.extraction_timeout,
-        )
-    return st.session_state["runner"]
+def _get_context_and_filters(request: Request):
+    cfg = cfgmod.get_config()
+    usage = state.load_usage(cfg)
+    entries = state.load_catalog()
+    model_ids = [e.model_id for e in entries]
+    query_params = dict(request.query_params)
+    raw_views = request.query_params.getlist("view")
+    if raw_views:
+        query_params["view"] = raw_views[0]
+    if request.cookies.get("agy_theme"):
+        query_params.setdefault("theme", request.cookies.get("agy_theme"))
+    filters = state.parse_filters(query_params, cfg, usage, model_ids)
+    ctx = state.build_context(cfg, usage, entries, filters, runner=state.get_runner(cfg))
+    return cfg, usage, entries, model_ids, query_params, filters, ctx
 
 
-def sidebar(usage: source.UsageData):
-    st.sidebar.title("🛰️ Antigravity Usage")
-    page = st.sidebar.radio("Page", list(PAGES), key="nav")
-
-    st.sidebar.divider()
-    st.sidebar.caption("FILTERS")
-    theme = st.sidebar.radio("Theme", ["dark", "light"], horizontal=True, key="theme")
-
-    daily = usage.daily
-    if not daily.empty:
-        dmin, dmax = daily["date"].min().date(), daily["date"].max().date()
-        picked = st.sidebar.date_input("Date range", value=(dmin, dmax),
-                                       min_value=dmin, max_value=dmax, key="flt_dates")
-        if isinstance(picked, (list, tuple)) and len(picked) == 2:
-            start, end = picked
-        else:
-            start = end = picked
-    else:
-        start = end = None
-    if st.sidebar.button("Reset filters", key="flt_reset"):
-        for k in ("flt_dates", "flt_model", "flt_fx", "flt_sub"):
-            st.session_state.pop(k, None)
-        st.rerun()
-
-    st.sidebar.divider()
-    st.sidebar.caption("PRICING")
-    ids = pricing.models(load_catalog())
-    default_id = "gemini-3.8-flash" if "gemini-3.8-flash" in ids else (ids[0] if ids else "")
-    model_id = st.sidebar.selectbox("Pricing model", ids, index=ids.index(default_id) if ids else 0,
-                                    key="flt_model")
-    fx = st.sidebar.number_input("USD → INR rate (dated, edit me)", min_value=0.0,
-                                 value=float(CONFIG.usd_to_inr), step=0.5, key="flt_fx")
-    sub_cfg = CONFIG.subscription
-    sub = st.sidebar.number_input(f"Subscription spend ({sub_cfg.get('currency', 'INR')}) per "
-                                  f"{sub_cfg.get('period_days', 30)} days",
-                                  min_value=0.0, value=float(sub_cfg.get("amount", 0.0)),
-                                  step=100.0, key="flt_sub")
-    st.sidebar.caption(sub_cfg.get("label", ""))
-
-    st.sidebar.divider()
-    if st.sidebar.button("🔄 Refresh data now", key="flt_refresh"):
-        load_usage.clear()
-        st.rerun()
-    st.sidebar.caption(f"Scanned {usage.scanned_at:%Y-%m-%d %H:%M:%S}")
-    runner = get_runner()
-    rec = None
-    if Path(runner.last_run_path).exists():
-        from agy_dash.jobs import last_run
-        rec = last_run(runner.last_run_path)
-    if rec:
-        st.sidebar.caption(f"Last extraction: {rec['status']} ({rec.get('ended_at', '?')[:19]})")
-    else:
-        st.sidebar.caption("Last extraction: not run from here yet")
-    return page, theme, start, end, model_id, fx, sub, runner
-
-
-def main() -> None:
+@app.get("/", response_class=HTMLResponse)
+def index(request: Request):
+    cfg = cfgmod.get_config()
     try:
-        usage = load_usage(str(CONFIG.brain_root), str(CONFIG.extractor_script))
-    except source.SourceError as exc:
-        st.error(f"Cannot read usage data: {exc}")
-        st.markdown(
-            "Check `config/config.json`:\n"
-            f"* `brain_root` → currently `{CONFIG.brain_root}`\n"
-            f"* `extractor_script` → currently `{CONFIG.extractor_script}`"
+        usage = state.load_usage(cfg)
+    except SourceError as exc:
+        return templates.TemplateResponse(request, "error.html", {
+            "request": request, "message": str(exc),
+            "hint": f"Verify brain_root ({cfg.brain_root}) and extractor_script ({cfg.extractor_script}) in config/config.json.",
+        }, status_code=500)
+
+    entries = state.load_catalog()
+    model_ids = [e.model_id for e in entries]
+    query_params = dict(request.query_params)
+    raw_views = request.query_params.getlist("view")
+    if raw_views:
+        query_params["view"] = raw_views[0]
+    if request.cookies.get("agy_theme"):
+        query_params.setdefault("theme", request.cookies.get("agy_theme"))
+    filters = state.parse_filters(query_params, cfg, usage, model_ids)
+    subtab = query_params.get("subtab", "workload")
+    stage = query_params.get("stage", "forecast")
+
+    try:
+        ctx = state.build_context(cfg, usage, entries, filters, runner=state.get_runner(cfg))
+    except state.PricingError as exc:
+        return templates.TemplateResponse(request, "error.html", {"request": request, "message": str(exc)}, status_code=400)
+
+    deep_data = state.load_deep(str(cfg.brain_root))
+
+    if filters.view == "command":
+        vm = views.build_command_view(ctx, deep_data)
+    elif filters.view == "sessions":
+        kind_param = query_params.get("kind")
+        kind_list = [kind_param] if kind_param else None
+        try:
+            top_n = int(query_params.get("top", 25))
+        except (ValueError, TypeError):
+            top_n = 25
+        vm = views.build_sessions_view(
+            ctx, deep_data, kind_sel=kind_list,
+            top_n=top_n,
+            search=query_params.get("search"),
         )
-        st.stop()
+    else:
+        lab_params = dict(query_params)
+        if "chosen_models" in request.query_params:
+            lab_params["chosen_models"] = request.query_params.getlist("chosen_models")
+        vm = views.build_economics_view(ctx, query_params, lab_params)
 
-    page, theme, start, end, model_id, fx, sub, runner = sidebar(usage)
-    common.inject_css(theme)
+    runner_state = ctx.runner.state if ctx.runner else None
+    sync_data = views.build_sync_drawer(ctx)
 
-    daily = source.clip_dates(usage.daily, start, end)
-    sessions = source.sessions_touching(usage.sessions, start, end)
+    return templates.TemplateResponse(request, "base.html", {
+        "request": request, "ctx": ctx, "filters": filters,
+        "model_ids": model_ids, "vm": vm, "runner_state": runner_state,
+        "sync_data": sync_data, "subtab": subtab, "stage": stage,
+    })
 
-    catalog = pricing.Catalog(load_catalog())
-    on_date = daily["date"].max().date() if not daily.empty else None
-    prices, estimate = catalog.price_on(model_id, on_date)
-    if prices is None:
-        st.error(f"No pricing entry for model '{model_id}'.")
-        st.stop()
-    price_note = catalog.availability_warning(model_id, on_date) if estimate else None
-    if estimate and on_date:
-        price_note = (f"No price version covers {on_date} for {prices.name}; using the "
-                      f"{prices.effective_from} version as an ESTIMATE. Prices are dated - "
-                      "add a version in config/pricing.json to be exact.")
 
-    ctx = common.build_ctx(
-        config=CONFIG, usage=usage, sessions=sessions, daily=daily, catalog=catalog,
-        prices=prices, model_id=model_id, price_note=price_note,
-        currency=CONFIG.reporting_currency, usd_inr=float(fx),
-        subscription_amount=float(sub), theme=theme, runner=runner,
-    )
+@app.get("/partials/forecast-stage", response_class=HTMLResponse)
+def forecast_stage(request: Request):
+    cfg, usage, entries, model_ids, query_params, filters, ctx = _get_context_and_filters(request)
+    vm = views.build_economics_view(ctx, query_params, query_params)
+    return templates.TemplateResponse(request, "partials/forecast_stage.html", {"request": request, "ctx": ctx, "vm": vm})
 
-    PAGE_ICONS = {
-        "Overview": "📊",
-        "Usage Explorer": "🧭",
-        "Model Cost Lab": "⚗️",
-        "Forecast": "🔮",
-        "Deep Signals": "⚡",
-        "Data & Jobs": "⚙️",
-    }
 
-    t = ctx.overview.totals
-    range_str = f"{pd.Timestamp(start):%d %b %Y} → {pd.Timestamp(end):%d %b %Y}" if start and end else "Full Log History"
-    badges = [
-        (f"MODEL: {prices.name}", "model"),
-        (f"RANGE: {range_str}", "range"),
-        (f"{common.fmt_tokens(t.total)} TOKENS", "tokens"),
-        (f"{ctx.money(ctx.overview.api_cost_usd)} API-EQUIV", "cost"),
-    ]
-    common.hud_header("ANTIGRAVITY TELEMETRY CONTROL",
-                      f"Live session analytics · {t.sessions:,} sessions · {t.active_days} active days",
-                      badges)
+@app.get("/partials/lab-stage", response_class=HTMLResponse)
+def lab_stage(request: Request):
+    cfg, usage, entries, model_ids, query_params, filters, ctx = _get_context_and_filters(request)
+    lab_params = dict(query_params)
+    if "chosen_models" in request.query_params:
+        lab_params["chosen_models"] = request.query_params.getlist("chosen_models")
+    vm = views.build_economics_view(ctx, query_params, lab_params)
+    return templates.TemplateResponse(request, "partials/lab_stage.html", {"request": request, "ctx": ctx, "vm": vm})
 
-    st.title(f"{PAGE_ICONS.get(page, '')} {page}")
-    if start and end:
-        st.caption(f"{range_str} · priced at **{prices.name}** · reporting currency **{ctx.currency}**")
-    PAGES[page](ctx)
 
-    st.divider()
-    st.caption("🔒 Data is read-only from the Antigravity CLI's local logs; nothing is uploaded. "
-               "Costs are computed from tokens with a dated price catalog - not read from the logs.")
+@app.get("/partials/session-detail/{session_id}", response_class=HTMLResponse)
+def session_detail(request: Request, session_id: str):
+    cfg = cfgmod.get_config()
+    usage = state.load_usage(cfg)
+    entries = state.load_catalog()
+    query_params = dict(request.query_params)
+    if request.cookies.get("agy_theme"):
+        query_params.setdefault("theme", request.cookies.get("agy_theme"))
+    filters = state.parse_filters(query_params, cfg, usage, [e.model_id for e in entries])
+    ctx = state.build_context(cfg, usage, entries, filters, runner=None)
+    deep_data = state.load_deep(str(cfg.brain_root))
+    detail = views.build_session_detail(ctx, deep_data, session_id)
+    if not detail:
+        return HTMLResponse("<p style='color:var(--signal-rose); padding:1rem;'>Session not found.</p>", status_code=404)
+    return templates.TemplateResponse(request, "partials/session_detail.html", {"request": request, "detail": detail})
+
+
+@app.post("/api/refresh", response_class=HTMLResponse)
+def refresh_scan(request: Request, scope: str | None = None, hx_request: Annotated[str | None, Header()] = None):
+    _check_csrf(hx_request)
+    if scope == "deep":
+        state.DEEP_CACHE.clear()
+    else:
+        state.clear_all_caches()
+    return index(request)
+
+
+@app.post("/api/snapshots/ingest", response_class=HTMLResponse)
+def save_snapshot(request: Request, hx_request: Annotated[str | None, Header()] = None):
+    _check_csrf(hx_request)
+    cfg = cfgmod.get_config()
+    usage = state.load_usage(cfg)
+    try:
+        conn = snapshots.connect(cfg.db_path)
+        try:
+            info = snapshots.ingest(conn, usage)
+            cnt = snapshots.counts(conn)
+        finally:
+            conn.close()
+        return HTMLResponse(f"<span style='color:var(--signal-emerald);'>Snapshot recorded: {info['sessions']} sessions ({cnt['runs']} total runs).</span>")
+    except Exception as exc:
+        return HTMLResponse(f"<span style='color:var(--signal-rose);'>Snapshot failed: {exc}</span>", status_code=500)
+
+
+@app.post("/api/jobs/start", response_class=HTMLResponse)
+def start_job(request: Request, report: Annotated[str, Form()] = "all", hx_request: Annotated[str | None, Header()] = None):
+    _check_csrf(hx_request)
+    cfg = cfgmod.get_config()
+    runner = state.get_runner(cfg)
+    runner.start(report)
+    return templates.TemplateResponse(request, "partials/job_status.html", {"request": request, "runner_state": runner.state})
+
+
+@app.get("/api/jobs/status", response_class=HTMLResponse)
+def job_status(request: Request):
+    cfg = cfgmod.get_config()
+    runner = state.get_runner(cfg)
+    runner.poll()
+    return templates.TemplateResponse(request, "partials/job_status.html", {"request": request, "runner_state": runner.state})
+
+
+@app.get("/api/export/daily.csv")
+def export_daily():
+    cfg = cfgmod.get_config()
+    usage = state.load_usage(cfg)
+    buf = io.StringIO()
+    usage.daily.to_csv(buf, index=False)
+    return Response(content=buf.getvalue(), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=antigravity_daily.csv"})
+
+
+@app.get("/api/export/sessions.csv")
+def export_sessions():
+    cfg = cfgmod.get_config()
+    usage = state.load_usage(cfg)
+    buf = io.StringIO()
+    usage.sessions.to_csv(buf, index=False)
+    return Response(content=buf.getvalue(), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=antigravity_sessions.csv"})
+
+
+@app.get("/api/export/forecast.csv")
+def export_forecast():
+    cfg = cfgmod.get_config()
+    usage = state.load_usage(cfg)
+    values = usage.daily["total"].to_numpy(dtype=float) if not usage.daily.empty else []
+    fc = views.stats.run_forecast("Bootstrap resampling", values, 30, last_date=usage.daily["date"].max() if not usage.daily.empty else None)
+    buf = io.StringIO()
+    fc.to_frame().to_csv(buf, index=False)
+    return Response(content=buf.getvalue(), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=antigravity_forecast.csv"})
 
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run("app:app", host="127.0.0.1", port=8501, reload=True)

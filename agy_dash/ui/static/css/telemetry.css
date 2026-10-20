@@ -1,0 +1,847 @@
+/* High-Craft Mission Telemetry Design System */
+
+:root {
+  --bg-core: #0B0F19;
+  --panel-bg: #111827;
+  --panel-solid: #151B2A;
+  --panel-alt: #1E293B;
+  --border-subtle: #1F2937;
+  --border-specular: rgba(255, 255, 255, 0.08);
+  --text-main: #F1F5F9;
+  --text-bright: #FFFFFF;
+  --text-muted: #94A3B8;
+  /* Semantic signal palette. Legacy --brand-* aliases keep older selectors intact. */
+  --signal-sky: #38BDF8;
+  --signal-emerald: #10B981;
+  --signal-amber: #F59E0B;
+  --signal-violet: #A78BFA;
+  --signal-rose: #F43F5E;
+  --brand-cyan: var(--signal-sky);
+  --brand-accent: var(--signal-sky);
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme="light"] {
+  --bg-core: #F8FAFC;
+  --panel-bg: #FFFFFF;
+  --panel-solid: #FFFFFF;
+  --panel-alt: #F1F5F9;
+  --border-subtle: #E2E8F0;
+  --border-specular: rgba(0, 0, 0, 0.06);
+  --text-main: #0F172A;
+  --text-bright: #020617;
+  --text-muted: #64748B;
+  --signal-sky: #0284C7;
+  --signal-emerald: #059669;
+  --signal-amber: #D97706;
+  --signal-rose: #E11D48;
+  --signal-violet: #7C3AED;
+  --brand-cyan: #0284C7;
+  --brand-accent: #0284C7;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--bg-core);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono,
+.data-table td.mono,
+.kpi-card .val,
+.pill-val {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Vector icon sprite sizing (24x24 stroke-based symbols). */
+svg.icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+svg.icon use {
+  stroke: currentColor;
+}
+
+.icon {
+  display: inline-block;
+  vertical-align: text-top;
+}
+
+/* ==========================================================================
+   Command Bar & Flight Deck Navigation
+   ========================================================================== */
+
+.command-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  max-width: 100vw;
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.command-bar-primary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.55rem 1.25rem;
+  border-bottom: 1px solid var(--border-specular);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.brand-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.brand-accent-slash {
+  color: var(--brand-accent);
+  font-weight: 800;
+}
+
+.brand-radar-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--signal-emerald);
+  box-shadow: 0 0 8px var(--signal-emerald);
+  animation: radarPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes radarPing {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.badge-pill {
+  background: var(--panel-alt);
+  border: 1px solid var(--border-subtle);
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.pill-dot.emerald { background: var(--signal-emerald); }
+.pill-label { color: var(--text-muted); font-size: 0.65rem; font-weight: 600; }
+.pill-val { color: var(--text-bright); font-weight: 700; }
+
+/* Segmented View Switcher */
+.view-nav {
+  display: inline-flex;
+  align-items: center;
+  background: var(--panel-solid);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.nav-tab .tab-idx {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  opacity: 0.7;
+}
+
+.nav-tab:hover {
+  color: var(--text-main);
+  background: var(--panel-alt);
+}
+
+.nav-tab.active {
+  color: var(--brand-accent);
+  border-color: var(--border-subtle);
+  background: var(--panel-bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Flight Deck Action Buttons */
+.deck-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn {
+  background: var(--panel-alt);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 0.32rem 0.65rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  font-family: var(--font-body);
+}
+
+.btn:hover {
+  border-color: var(--brand-accent);
+  color: var(--text-bright);
+}
+
+.btn-primary {
+  background: var(--brand-accent);
+  color: #000;
+  font-weight: 600;
+  border-color: var(--brand-accent);
+}
+
+.btn-primary:hover {
+  background: #7dd3fc;
+  color: #000;
+}
+
+.btn-action {
+  font-size: 0.72rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.btn-sync {
+  font-weight: 600;
+}
+
+/* Status Dot */
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.status-dot.idle { background: var(--signal-emerald); }
+.status-dot.running { background: var(--signal-amber); }
+.pulse { animation: pulseAnim 1.5s infinite; }
+@keyframes pulseAnim { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+/* Tier 2: Precision Filter Strip */
+.filter-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  padding: 0.4rem 1.25rem;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.filter-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.filter-group-label {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.filter-date-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.date-sep {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.filter-input {
+  background: var(--panel-solid);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  height: 28px;
+  transition: border-color 0.15s ease;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: var(--brand-accent);
+}
+
+.date-input {
+  max-width: 125px;
+}
+
+.model-select {
+  max-width: 190px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.currency-select {
+  width: 95px;
+}
+
+.fx-input {
+  width: 4.8rem;
+}
+
+.sub-input {
+  width: 5.4rem;
+}
+
+.filter-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: auto;
+}
+
+.btn-filter {
+  background: var(--brand-accent);
+  color: #000;
+  font-weight: 600;
+}
+
+.btn-reset {
+  color: var(--text-muted);
+}
+
+/* Progressive-disclosure sub-tab navigation */
+.subtab-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--panel-solid);
+}
+
+.subtab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  padding: 0.45rem 0.9rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.subtab-btn:hover {
+  color: var(--text-main);
+}
+
+.subtab-btn.active {
+  color: var(--text-bright);
+  border-bottom-color: var(--signal-sky);
+}
+
+.subtab-pane { display: none; }
+.subtab-pane.active { display: block; }
+
+/* Collapsible filter deck panels */
+.filter-collapsible { display: none; }
+.filter-collapsible.open { display: flex; }
+
+.filter-deck-panel { display: none; }
+.filter-deck-panel.open {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  padding: 0.4rem 1.25rem;
+  background: rgba(0, 0, 0, 0.12);
+  border-top: 1px solid var(--border-specular);
+}
+
+/* ==========================================================================
+   Workspace Layout & Bento Grid
+   ========================================================================== */
+
+.workspace {
+  max-width: 1540px;
+  margin: 1.25rem auto 2.5rem auto;
+  padding: 0 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* KPI Strip */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.kpi-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-specular);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  min-width: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.kpi-card:hover {
+  border-color: var(--border-subtle);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="light"] .kpi-card:hover {
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+}
+
+.kpi-card .lbl {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpi-card .val {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0.25rem 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-bright);
+}
+
+.kpi-card .sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Callouts */
+.callout {
+  background: var(--panel-alt);
+  border-left: 3px solid var(--brand-accent);
+  padding: 0.6rem 0.9rem;
+  border-radius: 4px;
+  font-size: 0.76rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-muted);
+  word-break: break-word;
+}
+.callout.warning {
+  border-left-color: var(--signal-amber);
+  color: var(--signal-amber);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+/* Bento Grid */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
+}
+
+.bento-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-specular);
+  border-radius: 8px;
+  padding: 1rem;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.col-3 { grid-column: span 3; }
+.col-4 { grid-column: span 4; }
+.col-5 { grid-column: span 5; }
+.col-6 { grid-column: span 6; }
+.col-7 { grid-column: span 7; }
+.col-8 { grid-column: span 8; }
+.col-12 { grid-column: span 12; }
+
+@media (max-width: 1200px) {
+  .col-8, .col-7 { grid-column: span 12; }
+  .col-5, .col-4 { grid-column: span 12; }
+}
+
+@media (max-width: 900px) {
+  .col-6 { grid-column: span 12; }
+  .col-3 { grid-column: span 6; }
+  .filter-buttons { margin-left: 0; width: 100%; justify-content: flex-end; }
+}
+
+@media (max-width: 600px) {
+  .col-3 { grid-column: span 12; }
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Chart Containers */
+.chart-box {
+  width: 100%;
+  height: 260px;
+  min-height: 260px;
+  min-width: 0;
+  position: relative;
+}
+
+.chart-box-tall {
+  width: 100%;
+  height: 350px;
+  min-height: 350px;
+  min-width: 0;
+  position: relative;
+}
+
+/* Economics stage switcher panes */
+.econ-stage-pane { display: none; }
+.econ-stage-pane.active { display: block; }
+
+/* ==========================================================================
+   Data Tables & Cell Truncation
+   ========================================================================== */
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+  text-align: left;
+}
+
+.data-table th {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.data-table.clickable tbody tr {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.data-table.clickable tbody tr:hover {
+  background: var(--panel-alt);
+}
+
+.cell-label {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-truncate {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-truncate-lg {
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Slide-Over Drawers
+   ========================================================================== */
+
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.drawer-backdrop.open {
+  display: block;
+  opacity: 1;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 520px;
+  max-width: 92vw;
+  background: var(--panel-solid);
+  border-left: 1px solid var(--border-subtle);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.6);
+  z-index: 210;
+  transform: translateX(100%);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ==========================================================================
+   Unified 54px Command Bar & Collapsible Filter Deck
+   ========================================================================== */
+
+.command-bar-unified {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 54px;
+  height: 54px;
+  padding: 0 1.25rem;
+  width: 100%;
+  max-width: 100vw;
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  flex-wrap: nowrap;
+}
+
+.command-bar-unified .badge-pill {
+  padding: 0.15rem 0.45rem;
+  font-size: 0.68rem;
+}
+
+.command-bar-unified .btn {
+  padding: 0.28rem 0.55rem;
+  font-size: 0.72rem;
+}
+
+.btn-filter-toggle {
+  font-weight: 600;
+}
+
+.filter-pill-summary {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* The form is a zero-height wrapper so only the deck inside it occupies space. */
+.command-bar-unified > form {
+  display: contents;
+}
+
+/* Open deck drops as a full-width strip directly beneath the 54px bar. */
+.command-bar-unified .filter-deck-panel.open {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background: var(--panel-solid);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 899px) {
+  .filter-pill-summary {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Command View Hero KPI Matrix
+   ========================================================================== */
+.hero-kpi-matrix {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.hero-kpi-matrix .kpi-card {
+  border-top: 2px solid transparent;
+}
+
+.hero-kpi-matrix .kpi-card:nth-child(1) { border-top-color: var(--signal-sky); }
+.hero-kpi-matrix .kpi-card:nth-child(2) { border-top-color: var(--signal-emerald); }
+.hero-kpi-matrix .kpi-card:nth-child(3) { border-top-color: var(--signal-violet); }
+.hero-kpi-matrix .kpi-card:nth-child(4) { border-top-color: var(--signal-amber); }
+
+.hero-kpi .lbl {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: normal;
+}
+
+.hero-kpi .lbl svg.icon {
+  width: 14px;
+  height: 14px;
+}
+
+.hero-kpi .val {
+  font-size: 1.6rem;
+}
+
+.hero-kpi .lbl > .badge-pill,
+.hero-kpi .lbl > .info-chip {
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .hero-kpi-matrix { grid-template-columns: 1fr; }
+}
+
+.info-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--panel-alt);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  cursor: help;
+}
+
+.info-chip:hover {
+  border-color: var(--signal-sky);
+  color: var(--text-main);
+}

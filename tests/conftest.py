@@ -205,3 +205,26 @@ def build_brain(tmp_path: Path) -> Path:
 @pytest.fixture
 def rich_brain(tmp_path) -> Path:
     return build_brain(tmp_path)
+
+
+@pytest.fixture
+def client(usage, rich_brain, monkeypatch, tmp_path):
+    from fastapi.testclient import TestClient
+    import app as app_module
+    from agy_dash import config as cfgmod, pricing
+    from agy_dash.ui import state
+    cfg = cfgmod.Config(data={
+        **cfgmod.DEFAULTS,
+        "brain_root": str(rich_brain),
+        "db_path": str(tmp_path / "snap.db"),
+        "log_dir": str(tmp_path / "logs"),
+        "reporting_currency": "INR",
+        "usd_to_inr": 88.0,
+        "default_model": "claude-sonnet",
+        "subscription": {"amount": 2000.0, "currency": "INR"},
+    })
+    monkeypatch.setattr(cfgmod, "get_config", lambda reload=False: cfg)
+    monkeypatch.setattr(state, "load_usage", lambda _: usage)
+    monkeypatch.setattr(state, "load_catalog", lambda: pricing.default_catalog())
+    state.clear_all_caches()
+    return TestClient(app_module.app)

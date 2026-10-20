@@ -1,6 +1,6 @@
 {
   "brain_root": "~/.gemini/antigravity-cli/brain",
-  "extractor_script": "~/docs/superpowers/scripts/agy_usage.py",
+  "extractor_script": "agy_usage.py",
   "python_executable": "py",
   "db_path": "data/snapshots.db",
   "log_dir": "data/logs",

@@ -1,10 +1,11 @@
 <div class="subtab-bar" role="tablist">
-  <button type="button" class="subtab-btn active" data-subtab-target="tab-workload" role="tab" aria-pressed="true">01 // Leaderboard &amp; Directory</button>
-  <button type="button" class="subtab-btn" data-subtab-target="tab-swarm" role="tab" aria-pressed="false">02 // Swarm &amp; Agent Coordination</button>
-  <button type="button" class="subtab-btn" data-subtab-target="tab-reliability" role="tab" aria-pressed="false">03 // Reliability &amp; Diagnostics</button>
+  <button type="button" class="subtab-btn{% if subtab not in ('swarm', 'reliability') %} active{% endif %}" data-subtab-target="tab-workload" role="tab" aria-pressed="{% if subtab not in ('swarm', 'reliability') %}true{% else %}false{% endif %}">01 // Leaderboard &amp; Directory</button>
+  <button type="button" class="subtab-btn{% if subtab == 'swarm' %} active{% endif %}" data-subtab-target="tab-swarm" role="tab" aria-pressed="{% if subtab == 'swarm' %}true{% else %}false{% endif %}">02 // Swarm &amp; Agent Coordination</button>
+  <button type="button" class="subtab-btn{% if subtab == 'reliability' %} active{% endif %}" data-subtab-target="tab-reliability" role="tab" aria-pressed="{% if subtab == 'reliability' %}true{% else %}false{% endif %}">03 // Reliability &amp; Diagnostics</button>
 </div>
 
-<div id="tab-workload" class="subtab-pane active" role="tabpanel">
+{% set sub_active_workload = subtab not in ('swarm', 'reliability') %}
+<div class="subtab-pane{% if sub_active_workload %} active{% endif %}" id="tab-workload" role="tabpanel"{% if not sub_active_workload %} style="display:none;"{% endif %}>
 <!-- ZONE 1: FILTER BAR & KPI STRIP -->
 <div class="bento-panel col-12" style="margin-bottom:1rem; padding:0.6rem 0.85rem; display:flex; justify-content:space-between; align-items:center;">
   <div style="display:flex; gap:0.4rem; align-items:center;">
@@ -76,7 +77,7 @@
 </div>
 </div>
 
-<div id="tab-swarm" class="subtab-pane" role="tabpanel" style="display:none">
+<div class="subtab-pane{% if subtab == 'swarm' %} active{% endif %}" id="tab-swarm" role="tabpanel"{% if subtab != 'swarm' %} style="display:none;"{% endif %}>
 <div class="kpi-strip" style="margin-top:1rem;">
   {% for kpi in vm.swarm_kpis %}
     <div class="kpi-card">
@@ -150,7 +151,7 @@
 </div>
 </div>
 
-<div id="tab-reliability" class="subtab-pane" role="tabpanel" style="display:none">
+<div class="subtab-pane{% if subtab == 'reliability' %} active{% endif %}" id="tab-reliability" role="tabpanel"{% if subtab != 'reliability' %} style="display:none;"{% endif %}>
 <!-- ZONE 3: FRICTION & RELIABILITY -->
 <div class="kpi-strip" style="margin-top:1rem;">
   {% for kpi in vm.context_kpis %}

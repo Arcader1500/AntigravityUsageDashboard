@@ -1,19 +1,27 @@
 <div class="economics-switcher subtab-bar" role="tablist">
-  <button type="button" class="subtab-btn active" data-econ-stage="forecast" onclick="switchEconStage('forecast')">
+  <button type="button" class="subtab-btn{% if stage != 'simulator' %} active{% endif %}" data-econ-stage="forecast" aria-pressed="{% if stage != 'simulator' %}true{% else %}false{% endif %}" onclick="switchEconStage('forecast')">
     01 // Forecasting Engine
   </button>
-  <button type="button" class="subtab-btn" data-econ-stage="simulator" onclick="switchEconStage('simulator')">
+  <button type="button" class="subtab-btn{% if stage == 'simulator' %} active{% endif %}" data-econ-stage="simulator" aria-pressed="{% if stage == 'simulator' %}true{% else %}false{% endif %}" onclick="switchEconStage('simulator')">
     02 // What-If Simulator &amp; Model Lab
   </button>
 </div>
 
-<div id="forecast-stage-pane" class="econ-stage-pane active">
+{% if stage != 'simulator' %}
+<div class="econ-stage-pane active" id="forecast-stage-pane">
+{% else %}
+<div class="econ-stage-pane" id="forecast-stage-pane" style="display:none;">
+{% endif %}
   <div id="forecast-stage-container">
     {% include "partials/forecast_stage.html" %}
   </div>
 </div>
 
+{% if stage == 'simulator' %}
+<div id="lab-stage-pane" class="econ-stage-pane active">
+{% else %}
 <div id="lab-stage-pane" class="econ-stage-pane" style="display:none;">
+{% endif %}
   <div id="lab-stage-container">
     {% include "partials/lab_stage.html" %}
   </div>

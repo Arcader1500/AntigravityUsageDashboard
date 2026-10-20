@@ -76,6 +76,8 @@ def index(request: Request):
     if request.cookies.get("agy_theme"):
         query_params.setdefault("theme", request.cookies.get("agy_theme"))
     filters = state.parse_filters(query_params, cfg, usage, model_ids)
+    subtab = query_params.get("subtab", "workload")
+    stage = query_params.get("stage", "forecast")
 
     try:
         ctx = state.build_context(cfg, usage, entries, filters, runner=state.get_runner(cfg))
@@ -110,7 +112,7 @@ def index(request: Request):
     return templates.TemplateResponse(request, "base.html", {
         "request": request, "ctx": ctx, "filters": filters,
         "model_ids": model_ids, "vm": vm, "runner_state": runner_state,
-        "sync_data": sync_data,
+        "sync_data": sync_data, "subtab": subtab, "stage": stage,
     })
 
 

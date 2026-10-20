@@ -137,3 +137,17 @@ def test_economics_view_segmented_switcher(client):
     assert 'class="economics-switcher subtab-bar"' in res.text
     assert 'data-econ-stage="forecast"' in res.text
     assert 'data-econ-stage="simulator"' in res.text
+
+
+def test_subtab_query_parameters(client):
+    res_swarm = client.get("/?view=sessions&subtab=swarm")
+    assert res_swarm.status_code == 200
+    assert 'class="subtab-pane active" id="tab-swarm"' in res_swarm.text
+
+    res_rel = client.get("/?view=sessions&subtab=reliability")
+    assert res_rel.status_code == 200
+    assert 'class="subtab-pane active" id="tab-reliability"' in res_rel.text
+
+    res_econ = client.get("/?view=economics&stage=simulator")
+    assert res_econ.status_code == 200
+    assert 'id="lab-stage-pane" class="econ-stage-pane active"' in res_econ.text

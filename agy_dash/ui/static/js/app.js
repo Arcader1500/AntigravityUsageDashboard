@@ -180,4 +180,29 @@
       if (deck && deck.classList.contains('open')) window.toggleFilterDeck();
     }
   });
+
+  // 10. Economics stage switching
+  window.switchEconStage = function(stage) {
+    const forecastPane = document.getElementById('forecast-stage-pane');
+    const labPane = document.getElementById('lab-stage-pane');
+    const show = (pane, on) => {
+      if (!pane) return;
+      pane.classList.toggle('active', on);
+      pane.style.display = on ? '' : 'none';
+    };
+    show(forecastPane, stage === 'forecast');
+    show(labPane, stage === 'simulator');
+    document.querySelectorAll('.economics-switcher .subtab-btn').forEach(btn => {
+      const on = btn.dataset.econStage === stage;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    if (typeof echarts !== 'undefined') {
+      const region = stage === 'simulator' ? labPane : forecastPane;
+      if (region) region.querySelectorAll('[data-chart]').forEach(el => {
+        const chart = echarts.getInstanceByDom(el);
+        if (chart) chart.resize();
+      });
+    }
+  };
 })();
